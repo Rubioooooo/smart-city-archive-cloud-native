@@ -1,0 +1,114 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.exporter.name | default .Release.Name }}-deployment
+  labels:
+    deployment: {{ .Values.exporter.name | default .Release.Name }}
+spec:
+  selector:
+    matchLabels:
+      app: "{{ .Values.exporter.name }}"
+  {{- if .Values.exporter.strategy }}
+  strategy:
+  {{ toYaml .Values.exporter.strategy | indent 2 }}
+  {{- else }}
+  strategy:
+    type: Recreate
+  {{- end }}
+  replicas: {{ .Values.exporter.replicaCount | default 1 }}
+  template:
+    metadata:
+      labels:
+        app: "{{ .Values.exporter.name }}"
+        {{- if .Values.exporter.labels }}
+        ## Custom pod labels
+{{ toYaml .Values.exporter.labels | indent 8 }}
+        {{- end }}
+    spec:
+      dnsPolicy: ClusterFirstWithHostNet
+      hostNetwork: {{ .Values.exporter.hostNetwork | default false }}
+      restartPolicy: Always
+      {{- if .Values.exporter.nodeSelector }}
+      nodeSelector:
+        {{- range $key, $val :=  .Values.exporter.nodeSelector }}
+        {{$key}}: {{$val}}
+        {{- end }}
+      {{- end}}
+      {{- if .Values.exporter.affinity }}
+      affinity:
+      {{ tpl .Values.exporter.affinity . | indent 8 }}
+      {{- end }}
+      containers:
+      - name: {{ .Values.exporter.name | default .Release.Name }} 
+        ports:
+        - containerPort: {{ .Values.exporter.server.targetPort }}
+          name: server
+          protocol: TCP
+        - containerPort: {{ .Values.exporter.brpc.targetPort }}
+          name: brpc
+          protocol: TCP
+        image: "{{ .Values.exporter.image }}:{{ .Values.exporter.imageTag }}"
+        imagePullPolicy: IfNotPresent #三个选择Always、Never、IfNotPresent
+        {{- if .Values.exporter.command }}
+        command: 
+        {{- range .Values.exporter.command}}
+          - {{.}}
+        {{- end }}
+        {{- end }}
+        {{- if .Values.exporter.args }}
+        args: 
+          {{- range .Values.exporter.args }}
+          {{- if contains "_json" .}}
+          {{- $val := $.Values.exporter._json | toJson | quote }}
+          {{- $valjson := list "xxx" $val "xxx" | join ""}}
+          - '{{ . | substr 0 (. | len | add -5 | int) }}{{ $valjson | replace "\\\\\\" "\\" | replace "\\\\u0026" "&" | replace "xxx\"\\\"" "\"" | replace "\\\"\"xxx" "\""}}' #开头结尾加xxx来替换\"避免误替换;其余的替换是 转义替换为 本身、
+          {{- else }}
+          - {{.}}
+          {{- end }}
+          {{- end }}
+        {{- end }}
+        {{- if .Values.exporter.env }}    
+        resources: 
+        {{- range $key, $json := .Values.exporter.resources }}
+          {{$key}}:
+        {{- range $key2, $value := $json}}
+            {{$key2}}: {{ $value }}
+        {{- end }}
+        {{- end }}
+        {{- end }}   
+        livenessProbe:
+          exec:
+            command:
+            - sh
+            - -c
+            - "ps -ef|grep 'java'|grep superarchive-v2-exporter-1.0.0-SNAPSHOT.jar|grep -v grep"
+          initialDelaySeconds: {{ .Values.exporter.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.exporter.livenessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.exporter.livenessProbe.timeoutSeconds }}
+          successThreshold: {{ .Values.exporter.livenessProbe.successThreshold }}
+          failureThreshold: {{ .Values.exporter.livenessProbe.failureThreshold }}
+        env:
+        - name: TZ
+          value: Asia/Shanghai
+        readinessProbe:
+          tcpSocket:
+            port: {{ .Values.exporter.server.targetPort }}
+          initialDelaySeconds: {{ .Values.exporter.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.exporter.readinessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.exporter.readinessProbe.timeoutSeconds }}
+          successThreshold: {{ .Values.exporter.readinessProbe.successThreshold }}
+          failureThreshold: {{ .Values.exporter.readinessProbe.failureThreshold }}
+        volumeMounts:
+        - name: configurations
+          mountPath: /data/aicu-tob/software/new/superarchive-v2-exporter/application.yml
+          subPath: application.yml
+
+        #- name: time
+        #  mountPath: /etc/localtime
+      volumes:  #挂载持久存储卷
+      - name: configurations
+        configMap:
+          name: {{ .Values.exporter.name }}-configmap
+      #- name: time
+      #  hostPath:
+      #    path: /usr/share/zoneinfo/Asia/Shanghai

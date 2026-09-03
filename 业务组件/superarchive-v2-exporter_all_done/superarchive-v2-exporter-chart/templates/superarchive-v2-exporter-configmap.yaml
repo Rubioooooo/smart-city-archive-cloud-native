@@ -1,0 +1,145 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+    name: {{ .Values.exporter.name }}-configmap
+    namespace: {{ .Release.Namespace }}
+    labels:
+        app: "{{ .Values.exporter.name }}"
+        chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+        heritage: "{{ .Release.Service }}"
+        release: "{{ .Release.Name }}"
+data:
+    application.yml: |
+        logging:
+          config: classpath:logback-spring.xml
+          directory: ./logs
+        
+        server:
+          port: {{ .Values.exporter.server.targetPort }}
+          tomcat:
+            connection-timeout: -1
+        
+        # spring:
+        #  main.allow-bean-definition-overriding: true
+        
+        
+        brpc:
+          global:
+            naming:
+              namingServiceUrl: consul://{{ .Values.exporter.consul.ip }}:{{ .Values.exporter.consul.port }}
+              ignore-fail-of-naming-service: true
+            server:
+              port: {{ .Values.exporter.brpc.targetPort }}
+              interceptor-bean-names: "customServerInterceptor, paramValidateInterceptor, globalExceptionInterceptor, traceInterceptor"
+              max-try-times: 1
+              keep-alive: true
+              keep-alive-time: 120
+          custom:
+            com.baidu.cie.superarchive.v2.persistence.service.GeneralClassifyService:
+              naming:
+                namingServiceUrl: list://{{ .Values.exporter.feature.ip }}:{{ .Values.exporter.feature.port }}
+              client:
+                connectTimeoutMillis: 3000
+                readTimeoutMillis: 3000
+                maxTotalConnections: 100
+                minIdleConnections: 100
+        
+        spring:
+          application:
+            name: superarchive2
+          # 如果同时暴露brpc和mvc的话，bean扫描重复
+          main.allow-bean-definition-overriding: true
+        
+          datasource:
+            #url: jdbc:mysql://192.0.2.26:3306/superarchivev2?useUnicode=true&characterEncoding=utf-8&autoReconnect=true&useSSL=false
+            url: jdbc:mysql://{{ .Values.exporter.mysql.ip }}:{{ .Values.exporter.mysql.port }}/{{ .Values.exporter.mysql.db }}?useUnicode=true&characterEncoding=utf-8&autoReconnect=true&useSSL=false
+            username: {{ .Values.exporter.mysql.user }}
+            password: {{ .Values.exporter.mysql.pass }}
+            driver-class-name: com.mysql.jdbc.Driver
+            hikari:
+              maximum-pool-size: 1000
+          jpa:
+            database: mysql
+            database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
+            showSql: true
+            hibernate:
+              ddl-auto: none
+              use-new-id-generator-mappings: false
+            properties:
+              hibernate:
+                format_sql: true
+                enable_lazy_load_no_trans: true
+                jdbc:
+                  batch_size: 200
+        
+          redis:
+            port: {{ .Values.exporter.redis.port }}
+            host: {{ .Values.exporter.redis.ip }}
+            database: {{ .Values.exporter.redis.db }}
+            password: {{ .Values.exporter.redis.pass }}
+            jedis:
+              pool:
+                max-active: 8
+                max-wait: -1
+                min-idle: 0
+                max-idle: 8
+              timeout: 5000ms
+        
+        # cache
+          cache:
+            type: caffeine
+        patronum:
+          cache:
+            caffeine:
+              basic-spec: expireAfterWrite=1800s
+              spec:
+                cache1: maximumSize=500,expireAfterWrite=1s
+        
+        
+        aise:
+          odp:
+            url: http://{{ .Values.exporter.odp.ip }}:{{ .Values.exporter.odp.port }}/face-api/
+        #    url: http://gpu-node.example.internal:8400/face-api/
+            maxRetryTimes: 2
+            retrySleepTimeMills: 200
+          batch:
+            pool:
+              core: 1
+              max: 5
+              queueSize: 5
+        
+        
+        feature:
+          identify:
+            minScore: 0.0
+        
+        #mycat:
+        #  enable: false
+        #  dataSourceList:
+        #    - name: dw0
+        #      url: jdbc:mysql://mysql-node.example.internal:8306
+        #      user: root
+        #      password: xxxx
+        #    - name: dr0
+        #      url: jdbc:mysql://mysql-node.example.internal:8306
+        #      user: root
+        #      password: xxxx
+        #    - name: dw1
+        #      url: jdbc:mysql://mysql-node.example.internal:8307
+        #      user: root
+        #      password: xxxx
+        #    - name: dr1
+        #      url: jdbc:mysql://mysql-node.example.internal:8307
+        #      user: root
+        #      password: xxxx
+        #
+        #  clusterList:
+        #    - name: c0
+        #      masters: dw0
+        #      replicas: dr0
+        #    - name: c1
+        #      masters: dw1
+        #      replicas: dr1
+        #
+        #  dbpartitions: 2
+        #  tbpartitions: 2

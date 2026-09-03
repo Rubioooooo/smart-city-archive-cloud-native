@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.exporter.name }}
+spec:
+  type: {{ .Values.exporter.server.service.type }}
+  ports:
+  - name: {{ .Values.exporter.name }}-server
+    port: {{ .Values.exporter.server.service.port }}
+    protocol: TCP
+    targetPort: {{ .Values.exporter.server.targetPort }}
+    {{ if eq .Values.exporter.server.service.type "NodePort" }}
+    nodePort: {{ .Values.exporter.server.nodePort }}
+    {{ end }}
+  - name: {{ .Values.exporter.name }}-brpc
+    port: {{ .Values.exporter.brpc.service.port }}
+    protocol: TCP
+    targetPort: {{ .Values.exporter.brpc.targetPort }}
+    {{ if eq .Values.exporter.brpc.service.type "NodePort" }}
+    nodePort: {{ .Values.exporter.brpc.nodePort }}
+    {{ end }}
+  selector:
+    app: "{{ .Values.exporter.name }}"

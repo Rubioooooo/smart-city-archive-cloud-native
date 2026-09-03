@@ -1,0 +1,15 @@
+FROM registry.example.com/ist/centos:7
+
+ADD jdk1.8.0_131.tar.gz /data/aicu-tob/software/
+ADD net-tools-2.0-0.25.20131004git.el7.x86_64.rpm /tmp/net-tools-2.0-0.25.20131004git.el7.x86_64.rpm
+RUN /bin/cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && mkdir -p /data/aicu-tob/software/new/ &&  yum -y localinstall /tmp/net-tools-2.0-0.25.20131004git.el7.x86_64.rpm && rm -rf /tmp/*.rpm
+
+ADD superarchive-v2-exporter /data/aicu-tob/software/new/superarchive-v2-exporter
+
+WORKDIR /data/aicu-tob/software/new/superarchive-v2-exporter/
+
+ENV JAVA_HOME=/data/aicu-tob/software/jdk1.8.0_131
+ENV PATH=${PATH}:${JAVA_HOME}/bin
+ENV TZ=Asia/Shanghai
+
+CMD /bin/sh /data/aicu-tob/software/new/superarchive-v2-exporter/do_start.sh
