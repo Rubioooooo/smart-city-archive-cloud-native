@@ -1,0 +1,17 @@
+FROM registry.example.com/public/deploy-base:centos7-gcc82
+
+ADD psmisc-22.20-17.el7.x86_64.rpm /tmp/psmisc-22.20-17.el7.x86_64.rpm
+ADD perl.tgz /tmp/
+ADD perl.repo /etc/yum.repos.d/perl.repo
+ADD coreutils-8.22-18.el7.x86_64.rpm /tmp/coreutils-8.22-18.el7.x86_64.rpm
+ADD aikl-face-package-1.3.5.1/ /home/idl-face/aikl-face-package-1.3.5.1
+ADD feature-frame_start.sh /home/idl-face/aikl-face-package-1.3.5.1/bin/feature-frame_start.sh
+
+RUN mv /etc/yum.repos.d/* /tmp && mv /tmp/perl.repo /etc/yum.repos.d/ &&  useradd idl-face -s /sbin/nologin && /bin/cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && yum clean all && yum -y localinstall /tmp/psmisc-22.20-17.el7.x86_64.rpm && yum -y install perl net-tools && yum -y localinstall /tmp/coreutils-8.22-18.el7.x86_64.rpm && rm -rf /tmp/*.rpm  && rm -rf /tmp/perl*
+
+
+ENV TZ=Asia/Shanghai
+WORKDIR /home/idl-face/aikl-face-package-1.3.5.1
+
+CMD /bin/sh /home/idl-face/aikl-face-package-1.3.5.1/bin/feature-frame_start.sh
+

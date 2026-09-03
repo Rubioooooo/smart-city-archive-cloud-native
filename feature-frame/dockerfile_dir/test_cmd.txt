@@ -1,0 +1,1 @@
+docker run -ti --privileged=true -e gpus=all  -e NVIDIA_DRIVER_CAPABILITIES="compute,utility" -e NVIDIA_VISIBLE_DEVICES=all --name test feature-frame:v1.0

@@ -1,0 +1,93 @@
+image: feature-frame
+imageTag: v1.0
+imagePullPolicy: IfNotPresent
+serviceName: feature-service
+nodePort: 8815
+
+database: 
+  # 需要写，所以用主库的svc
+  host: master-service.default.svc.cluster.local.
+  username: root
+  password: 'xxxx'
+  dbname: face
+  port: 5535
+  
+service:
+  annotations: {}
+  type: NodePort
+  port: 8815
+targetport: 8815
+Replicas: 2
+
+out_depend_msg:  #  依赖：外部的easypack鉴权
+  feature_auth:
+    ip: 192.0.2.40
+    port: 8787
+
+args: []
+gpuindex: 0
+image_quality_thresh: 0.3
+detect_conf_thresh: 0.8
+
+  
+resources:
+  requests:
+    nvidia.com/gpu: 1
+  limits:
+    nvidia.com/gpu: 1
+extraVolumes: '# - name: extras
+
+  #   emptyDir: {}
+
+  '
+extraVolumeMounts: '# - name: extras
+
+  #   mountPath: /usr/share/extras
+
+  #   readOnly: true
+
+  '
+extraInitContainers: '# - name: do-something
+
+  #   image: busybox
+
+  #   command: [''do'', ''something'']
+
+  '
+nodeSelector: {}
+tolerations: []
+livenessProbe:
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 5
+  successThreshold: 1
+  failureThreshold: 3
+readinessProbe:
+  # 测试平均启动端口8815的时间为120s
+  initialDelaySeconds: 130
+  periodSeconds: 10
+  timeoutSeconds: 1
+  successThreshold: 1
+  failureThreshold: 3
+persistence:
+  enabled: true
+  size: 10Gi
+  accessMode: ReadWriteOnce
+  storageClass: local-path
+
+
+deploymentAnnotations: {}
+podAnnotations: {}
+podLabels: {}
+
+
+# 启动时清空日志（默认关闭）
+initContainer:
+  enabled: false
+  image: busybox
+  tag: 1.29.3
+  
+  resources:
+    requests:
+      memory: 10Mi
+      cpu: 10m

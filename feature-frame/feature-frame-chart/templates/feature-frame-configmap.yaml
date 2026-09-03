@@ -1,0 +1,128 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "feature-frame.fullname" . }}-configuration
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ template "feature-frame.fullname" . }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    heritage: "{{ .Release.Service }}"
+    release: "{{ .Release.Name }}"
+data:
+  service.conf: |
+    # checking ready status
+    control_check_period : 600
+    control_check_interval : 5
+    
+    [server]
+    port : {{ .Values.targetport }}
+    gpu : {{ .Values.gpuindex }}
+    max_concurrency : 50
+    
+    [auth]
+    # local or server or aipe
+    auth_type : server
+    control_path : ./bin/feature_service_control
+    api_key : get_feature
+    license_file : ./project_conf/license.txt
+    server_ip : {{ .Values.out_depend_msg.feature_auth.ip }}
+    server_port : {{ .Values.out_depend_msg.feature_auth.port }}
+    # vis
+    token : CHANGE_ME_FEATURE_AUTH_TOKEN
+    so_tag : libface
+    version : GN1001
+    
+    [model]
+    model_conf : ./conf/app_get_feature.json
+    model_path : /home/img/AFS/models/
+
+    [db]
+    host: {{ .Values.database.host }}
+    username: {{ .Values.database.username }}
+    password: {{ .Values.database.password }}
+    dbname: {{ .Values.database.dbname }}
+    port: {{ .Values.database.port }}
+    cluster_name  :  face
+    connect_timeout_ms  :  1000
+    read_timeout_ms : 10000
+    write_timeout_ms : 10000
+    retry_times: 1
+    retry_interval_s  :  0
+    charset: utf8
+    
+  agent_get_feature.json: |
+    {
+      "plan_map": {
+        "get_feature": "plan_get_feature_v2"
+      },
+      "hook_map": {
+        "hd_image": "hook_dispatch_image_common",
+        "hg_image": "hook_gather_image_common",
+        "hd_face": "hook_dispatch_face_common",
+        "hg_face": "hook_gather_face_common",
+        "hd_hop_wrapper_image": "hook_dispatch_hop_wrapper_image",
+        "hg_hop_wrapper_image": "hook_gather_hop_wrapper_image",
+        "hd_hop_wrapper_face": "hook_dispatch_hop_wrapper_face",
+        "hg_hop_wrapper_face": "hook_gather_hop_wrapper_face",
+        "hs_pass_image": "hook_simple_do_nothing",
+        "hs_pass_face": "hook_simple_do_nothing",
+        "hr_image_entry": "hook_route_get_feature_image_entry_v2",
+        "hr_face_entry": "hook_route_get_feature_face_entry_v2",
+        "hs_sort_face": "hook_simple_sort_face",
+        "hs_split_face": "hook_simple_split_face",
+        "hs_ref_image": "hook_simple_get_ref_image"
+      },
+      "interface_map": {
+        "get_feature": "interface_get_feature_v1"
+      },
+      "agent_map": {
+        "get_feature": {
+          "interface": "get_feature",
+          "plan": "get_feature",
+          "hop": "hd_image",
+          "para": {
+            "parse_gen_func": "parse_para_get_feature_v1",
+            "image_min_width": 20,
+            "image_min_height": 20,
+            "face_min_width": 8,
+            "face_min_height": 8,
+            "sort_conf_thresh": 0.5,
+            "image_quality_thresh": {{ .Values.image_quality_thresh }},
+            "max_images_num": 8,
+            "model_type_cfg": "./conf/model_type.json"
+          }
+        }
+      }
+    }
+  detect.json: |
+    {
+      "ipt_map": {
+        "detect": [
+          {
+            "name": "ipt_facebox_v5p",
+            "spec_id": 0,
+            "batch": 1,
+            "delay_ms": 0,
+            "instance": 4,
+            "encrypted_model_path": "./models/detect/detect_rgb-customized-pa-retinaface.model.float32.paddle.kv.en",
+            "model_path": "./models/detect/model",
+            "model_param_path": "./models/detect/params",
+            "detect_conf_thresh": {{ .Values.detect_conf_thresh }},
+            "min_det_face_size": 23,
+            "min_scale_face_to_img": 0.025,
+            "nms_overlap_ratio": 0.3,
+            "pyramid_type": -1,
+            "nms_type": 1,
+            "box_trans_type": 0,
+            "box_valid_check": 1,
+            "round_up_type": 1,
+            "paddle": {
+              "paddle_debug": 0,
+              "device": 0,
+              "tag": "detect"
+            }
+          }
+        ]
+      }
+    }
+      

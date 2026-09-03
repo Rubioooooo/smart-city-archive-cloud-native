@@ -1,0 +1,5 @@
+[perl]
+name=perl
+baseurl=file:///tmp/perl
+enabled=1
+gpgcheck=0

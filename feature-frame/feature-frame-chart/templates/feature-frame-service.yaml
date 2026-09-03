@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.serviceName }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - name: feature-frame
+      port: {{ .Values.service.port }}
+      {{ if eq .Values.service.type "NodePort" }}
+      nodePort: {{ .Values.nodePort }}
+      {{ end }}
+      protocol: TCP
+      targetPort: {{ .Values.targetport }}
+  selector:
+    app: "{{ template "feature-frame.fullname" . }}-ist"
