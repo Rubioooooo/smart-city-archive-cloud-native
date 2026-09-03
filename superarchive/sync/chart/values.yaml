@@ -24,7 +24,7 @@ sync:
   primaryMysql:  
     # 如果只是测试，没有上游库，那么此处可以指定本地库的地址
     # 然后执行脚本导入数据到本地库，该脚本直接放在物理上，命令如下
-    # cd superarchive-sync_all_done/internal_test_sql
+    # cd superarchive/sync/internal_test_sql
     # sh import_sql.sh
     ip: mysql-ha-leader.default.svc.cluster.local.  # 该svc可以采用创建externalName类型的svc、或者自建endpoint来关联svc
     port: 3306

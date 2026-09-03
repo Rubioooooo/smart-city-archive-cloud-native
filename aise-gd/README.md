@@ -5,7 +5,7 @@
 ## Public repository build context
 
 The topology-discovery job (aise-gd-cronjob) runs with a dedicated
-utility image built from 镜像制作/job_dockerfile_dir/dockerfile.
+utility image built from image-build/topology-job/dockerfile.
 That Dockerfile preserves the original containerization definition and
 expects the following third-party executables in its build context:
 

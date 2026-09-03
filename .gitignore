@@ -6,7 +6,7 @@
 
 # --- 集群凭据物料（绝不入库） ---
 **/*.kubeconfig
-aise-gd/镜像制作/job_dockerfile_dir/config
+aise-gd/image-build/topology-job/config
 **/client-key*
 **/kubeconfig
 **/kubeconfig.*
