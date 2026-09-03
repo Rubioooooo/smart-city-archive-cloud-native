@@ -1,0 +1,278 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: aise-se-update-data-cronjob-configmap
+  namespace: {{ .Release.Namespace }}
+data:
+  update-data.sh: |
+    #/bin/bash
+
+    # 下述NAMESPACE来自于yaml中基于Downward API注入
+    alias kubectl="/bin/kubectl -n $NAMESPACE"
+    run_log_path="/tmp/run.log"
+        
+    # 1、获取workload的副本数
+    get_replicas_num() {
+       
+        workload_name=$(kubectl get statefulsets.apps -l type=aise-se |awk 'NR>1{print $1}') 
+        replicas=$(kubectl get statefulsets $workload_name -o jsonpath='{.spec.replicas}')
+        
+        echo $replicas
+    }
+
+    # 2、传入副本数，则生成切片号数组
+    generate_array() {
+        local num=$1
+        local result=()
+        local i
+        for ((i = 0; i < num; i++)); do
+            result+=($(expr $i / 2))
+        done
+        echo "${result[@]}"  # (0 0 1 1 2 2 3)
+    }
+
+
+    # 3、获取切片数
+    get_num_of_physical_partitions() {
+        # 1、依据副本数生成切片id数组，副本数从外部传入
+        num=$1
+        array=($(generate_array $num))
+        #echo "${array[@]}" # (0 0 1 1 2 2 3)
+
+
+        # 2、根据分组去重后得到的数字个数就是总切片数
+        num_of_physical_partitions=$(echo "${array[@]}" | tr ' ' '\n' | sort -u | wc -l)
+        
+        
+        # 3、返回值
+        echo $num_of_physical_partitions
+    }
+
+
+    # 4、从relay中获取idxid数据
+    get_idxid_from_relay() {
+        # 指定relay的ip与port
+        /home/idl-face/relay/bin/get_idxid --ip={{ .Values.out_depend_msg.relay.ip }} --port={{ .Values.out_depend_msg.relay.port }} --source=face 1> data/idxid
+    }
+        
+        
+    # 5、从databus中获取全量数据
+    get_all_index_from_databus() {
+        # 用到下面配置文件/home/idl-face/cctool/conf/sql.online.gconf里databus数据库的地址，获取全量数据
+        /home/idl-face/cctool/bin/all_data_gen --flagfile=/home/idl-face/cctool/conf/sql.online.gconf 1> data/index.all
+    }	
+
+
+    # 6、对获取的全量数据进行切片
+    make_split_all_index_data() {
+        # 1、获取切片数
+        split_count=$1
+
+        # 2、对全量文件进行切分
+        # (1) 存放全量数据的文件路径：/home/idl-face/aise_1.0.29.1/data/index.all
+        filename="/home/idl-face/aise_1.0.29.1/data/index.all"
+        
+        
+        # (2) 获取切片数, 有几个切片就将全量文件切成几个小文件，文件名以.n结果，n对应的就是具体某一个实例的切片id，从0开始
+        count=$split_count
+        
+        # (3) 执行切片脚本，切片原理具体可以参考split.py的注释
+        cd /home/idl-face/aise_1.0.29.1/bin/
+        echo "正在执行文件切分操作..." >> $run_log_path
+        python split.py $filename $count
+        echo -e "文件切分完成：\n`for i in $(ls /home/idl-face/aise_1.0.29.1/data/);do echo /home/idl-face/aise_1.0.29.1/data/$i;done`" >> $run_log_path
+
+    }
+
+
+    # 7、将切片分发切片数据给对应的pod
+    rsync_split_data() {
+        replicas_num=$(get_replicas_num)
+        array=$(generate_array $replicas_num) # array=(0 0 1 1 2 2 3)  
+        
+        
+        se_name=$(kubectl get statefulsets.apps -l type=aise-se -o jsonpath='{.items[*].metadata.name}')
+        i=0
+        for split_num in "${array[@]}";
+        do
+            # 数组内的元素编号，也就是切片文件的后缀名
+            fname=index.all.${split_num}
+            
+            
+            # 例如：array=(0 0 1 1 2 2 3)，切片号对应的pod名为
+            # 	0---》aise-se-0 
+            # 	0---》aise-se-1
+            # 	1---》aise-se-2
+            # 	1---》aise-se-3
+            # 	2---》aise-se-4
+            # 	2---》aise-se-5
+            # 	3---》aise-se-6
+            # 所以我们的pod名字依次累加即可
+            pod_name=${se_name}-$i
+            
+            
+            is_ready=`kubectl get pod ${pod_name} -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}'`
+            if [ "$is_ready" == "True" ];then
+                kubectl cp /home/idl-face/aise_1.0.29.1/data/$fname ${pod_name}:/home/idl-face/aise_1.0.29.1/data/$fname
+                echo -e "传送文件/home/idl-face/aise_1.0.29.1/data/$filename给$pod_name完成" >> $run_log_path
+                
+                kubectl cp /home/idl-face/aise_1.0.29.1/data/idxid ${pod_name}:/home/idl-face/aise_1.0.29.1/data/idxid
+                echo -e "传送文件/home/idl-face/aise_1.0.29.1/data/idxid给$pod_name完成" >> $run_log_path
+            fi
+            let i++
+            
+        done
+        
+    }
+
+
+    # 8、main函数
+    main() {
+        replicas_num=$(get_replicas_num)
+        num_of_physical_partitions=$(get_num_of_physical_partitions $replicas_num)
+        
+        # 获取数据
+        get_idxid_from_relay
+        get_all_index_from_databus
+        
+        
+        # 制作与分发切片
+        make_split_all_index_data $num_of_physical_partitions
+        rsync_split_data
+        
+    }
+
+
+    main
+
+  sql.online.gconf: |
+    --mysql_host={{ .Values.sqlOnlineGconf.mysql_host }}
+    --mysql_username={{ .Values.sqlOnlineGconf.mysql_username }}
+    --mysql_password={{ .Values.sqlOnlineGconf.mysql_password }}
+    --mysql_dbname={{ .Values.sqlOnlineGconf.mysql_dbname }}
+    --mysql_port={{ .Values.sqlOnlineGconf.mysql_port }}
+    
+    --all_sql=select id*%shards%+%table_shard% as gid, imageid, appid, groupid, userid, feature, user_info as info,index_json from t_pic_record_%table_shard%
+    
+    --shards=500
+    --shard_begin=0
+    --shard_end=500
+
+  split.py: |
+    #encoding:utf8
+    """
+    大致逻辑：主线程获取全量数据写入全局队列，然后均匀分发给每个文件对象自己的队列，然后文件对象从自己的的队列里提取数据写入文件
+    	1、生产者：主线程负责从全量数据里读取一行行数据，见函数read_line，然后放入全局队列json_queue
+    	2、消费者：
+    		启动4个线程，操作全局队列json_queue，从里面获取数据，然后取出gid对切片取余得到一个索引值，用该索引值去write_list里取出一个队列，然后把数据put进队列里，（每个文件对象对应一个队列）
+    		切片数为n则产生n个线程，从自己对应的队列里取出数据写入文件
+    """
+    
+    import json
+    import sys
+    import Queue
+    import threading
+    import time
+    
+    json_queue = Queue.Queue()
+    
+    write_list = []
+    
+    def timecost(func):
+        """ record time cost of function """
+        def wrapper(*args, **kwargs):
+            """ wrapper """
+            start = time.time()
+            res = func(*args, **kwargs)
+            cost = int((time.time() - start) * 1000)
+            print ("function: %s 执行时间为: %d" % (func.__name__, cost))
+            return res
+        return wrapper
+    
+    @timecost
+    def write_async(i):
+        """write to file """
+        global write_list
+        while True:
+            times = 0
+            while(write_list[i].empty()):
+                time.sleep(1)
+                times += 1
+                if times > 10:
+                    return
+            data = write_list[i].get()
+            fw_list[i].writelines(data)
+    
+    @timecost
+    def process_async():
+        """ process json"""
+        global json_queue
+        while True:
+            times = 0
+            while(json_queue.empty()):
+                time.sleep(1)
+                times += 1
+                if times > 10:
+                    return
+            data = json_queue.get()
+            # 改动1：新增一行
+            json_queue.task_done()
+
+            info = json.loads(data)
+            part_id = info['gid'] % count
+            write_list[part_id].put(data)
+    
+    def read_line(filename):
+        with open(filename) as f:
+            line = f.readline()
+            while line:
+                yield line
+                line = f.readline()
+    
+    if __name__ == "__main__":
+        # 获取全量文件名
+        filename = sys.argv[1]
+    	# 获取切片总数n
+        count = int(sys.argv[2])
+    
+    	# 文件对象列表，有n个切片就会有n个文件对象
+        fw_list = []
+        write_list = []
+    	# 存放线程对象
+        thread_list = []
+    	
+        for i in range(0, count):
+            tmp_file = filename + "." + str(i)  # index.all.0  index.all.1 index.all.2 index.all.3
+            tmp_fw = open(tmp_file, "w")
+            fw_list.append(tmp_fw)
+            write_list.append(Queue.Queue())  # 与fw_list一一对应，一个文件对象对应一个队列
+            
+            
+            write_thread = threading.Thread(target=write_async, args=(i,), name="Save")
+            write_thread.setDaemon(True)
+            write_thread.start()
+            thread_list.append(write_thread)
+    
+    	# 启动4个线程，执行process_async，操作全局队列json_queue
+        for i in range(0, 4):
+            process_thread = threading.Thread(target=process_async, name="Proc")
+            process_thread.setDaemon(True)
+            process_thread.start()
+    
+            # 改动2：注释下行
+            # thread_list.append(process_thread) 
+
+ 
+    
+    
+        for line in read_line(filename):
+            json_queue.put(line)
+        # 改动3：新增一行
+        json_queue.join()
+    
+        for tmp_thread in thread_list:
+            tmp_thread.join()
+    
+        for fw in fw_list:
+            fw.close()
+        print("split.py脚本执行完毕")

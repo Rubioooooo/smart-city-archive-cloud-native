@@ -1,0 +1,102 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: aise-se-update-data-cronjob
+  namespace: {{ .Release.Namespace }}
+spec:
+  # 强烈建议设置并发策略，根据调度周期和任务特性进行设置
+  concurrencyPolicy: Forbid
+  # 强烈建议设置失败任务数，用于排查任务失败根因，以优化任务
+  failedJobsHistoryLimit: 1
+  successfulJobsHistoryLimit: 3
+  # 强烈建议设置错过调度的计算时间
+  startingDeadlineSeconds: {{ .Values.cronjob.startingDeadlineSeconds}}
+  schedule: {{ .Values.cronjob.schedule | quote }}
+  jobTemplate:
+    spec:
+      ttlSecondsAfterFinished: 100
+      template:
+        spec:
+          serviceAccountName: aise-se-updata-data
+          {{- if .Values.affinity }}
+          affinity:
+{{ toYaml .Values.affinity | indent 8 }}
+          {{- end }}
+          {{- if .Values.nodeSelector }}
+          nodeSelector:
+          {{ toYaml .Values.nodeSelector | indent 8 }}
+          {{- end }}
+          {{- if .Values.priorityClassName }}
+          priorityClassName: "{{ .Values.priorityClassName }}"
+          {{- end }}
+          {{- if .Values.busybox.enabled }}
+          initContainers:
+          - name: "aise-se-init"
+            image: "{{ .Values.busybox.image}}:{{ .Values.busybox.tag }}"
+            imagePullPolicy: {{ .Values.imagePullPolicy | quote }}
+            resources:
+{{ toYaml .Values.initContainer.resources | indent 14 }}
+            command:  ["rm","-rf","/home/idl-face/aise_1.0.29.1/data"]
+            volumeMounts:
+            - name: data
+              mountPath: /home/idl-face/aise_1.0.29.1/data
+              {{- if .Values.persistence.subPath }}
+              subPath: {{ .Values.persistence.subPath }}
+              {{- end }}
+          {{- end }}
+          containers:
+          - name: aise-se-update-data-cronjob
+            #command: ["tail","-f","/dev/null"]
+            command: ["/bin/sh","/home/idl-face/aise_1.0.29.1/bin/update-data.sh"]
+            securityContext:
+              readOnlyRootFilesystem: false
+            image: "{{ .Values.cronjob.image }}:{{ .Values.cronjob.imageTag }}"
+            imagePullPolicy: {{ .Values.cronjob.imagePullPolicy | quote }}
+            resources:
+{{ toYaml .Values.cronjob.resources | indent 14 }}
+            env:
+            - name: TZ
+              value: Asia/Shanghai
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            volumeMounts:
+            - name: data
+              mountPath: /home/idl-face/aise_1.0.29.1/data
+              
+              
+            - name: configurations
+              mountPath: /home/idl-face/aise_1.0.29.1/bin/update-data.sh
+              subPath: update-data.sh
+              
+              
+            - name: configurations
+              mountPath: /home/idl-face/cctool/conf/sql.online.gconf
+              subPath: sql.online.gconf
+              
+              
+            - name: configurations
+              mountPath: /home/idl-face/aise_1.0.29.1/bin/split.py
+              subPath: split.py
+
+          restartPolicy: OnFailure
+          volumes:
+          - name: configurations
+            configMap:
+              name: aise-se-update-data-cronjob-configmap
+          {{- if eq .Values.cronjob.persistence.type "local-path" }}
+          
+          
+          - name: data
+            persistentVolumeClaim:
+              claimName: aise-se-update-data-cronjob-pvc
+          {{- else if eq .Values.cronjob.persistence.type "emptyDir" }}
+          - name: data
+            emptyDir:
+              {{- if .Values.cronjob.persistence.memory }}
+              medium: Memory
+              {{- end }}
+              sizeLimit: {{ .Values.cronjob.persistence.size }}
+          {{- end }}
+

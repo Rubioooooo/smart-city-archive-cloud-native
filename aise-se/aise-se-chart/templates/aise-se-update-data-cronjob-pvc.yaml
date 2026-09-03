@@ -1,0 +1,19 @@
+{{- if eq .Values.cronjob.persistence.type "local-path" }}
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: aise-se-update-data-cronjob-pvc
+spec:
+  accessModes:
+    - {{ .Values.cronjob.persistence.accessMode | quote }}
+  resources:
+    requests:
+      storage: {{ .Values.cronjob.persistence.size }}
+  {{- if .Values.cronjob.persistence.storageClass }}
+  {{- if (eq "-" .Values.cronjob.persistence.storageClass) }}
+  storageClassName: ""
+  {{- else }}
+  storageClassName: "{{ .Values.cronjob.persistence.storageClass }}"
+  {{- end }}
+  {{- end }}
+{{- end }}
