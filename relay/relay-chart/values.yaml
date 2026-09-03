@@ -1,0 +1,51 @@
+# relay会被动接收bridge推送过来的数据，并且被动接收aise-se发起的拉取请求
+# 所以relay中不需要配置访问bridge与aise-se的地址
+image: relay
+imageTag: v1.0
+Replicas: 1
+service:
+  annotations: {}
+  type: ClusterIP
+  port: 8192
+serviceName: relay-service
+serviceport: 8192
+imagePullPolicy: IfNotPresent
+
+
+livenessProbe:
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 5
+  successThreshold: 1
+  failureThreshold: 3
+readinessProbe:
+  initialDelaySeconds: 35
+  periodSeconds: 10
+  timeoutSeconds: 1
+  successThreshold: 1
+  failureThreshold: 3
+persistence:
+  enabled: true
+  size: 20Gi
+  accessMode: ReadWriteOnce
+  storageClass: local-path
+resources:
+  requests:
+    cpu: 100m
+    memory: 1Gi
+  limits:
+    cpu: 4
+    memory: 60Gi
+
+
+
+# 开启init容器，在启动之初清理日志
+initContainer:
+  enabled: false
+  image: busybox
+  tag: 1.29.3
+  
+  resources:
+    requests:
+      memory: 10Mi
+      cpu: 10m

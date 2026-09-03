@@ -1,0 +1,110 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "relay.fullname" . }}-configuration
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ template "relay.fullname" . }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    heritage: "{{ .Release.Service }}"
+    release: "{{ .Release.Name }}"
+data:
+  comlog.conf: |
+    COMLOG_PROCNAME :  relay_ub_server
+    COMLOG_TIME_FORMAT : %Y-%m-%d %H:%M:%S 
+    COMLOG_DEVICE_NUM : 1
+    COMLOG_DEVICE0 : FILE
+    COMLOG_LEVEL : 2
+    FILE_TYPE : ULLOG
+    FILE_NAME : relay_ub.log
+    FILE_PATH : ./log
+    FILE_LAYOUT : %L: %Y: %P * %T %R 
+    FILE_OPEN : 1 
+
+  relay_flags.gconf: |
+    # relay server flags conf file
+    --port={{ .Values.serviceport }}
+    --thread_num=16
+    --use_ubrpc=false
+    --master_mode=true
+    
+    # slave mode config
+    # --master_mode=false
+    # --master_ip=
+    # --master_port=
+    
+    # compress config
+    --compress_type=0
+    
+    # expire time config
+    # --data_file_expire_seconds=86400
+    # --cache_expire_interval=3600
+    # --sync_log_expire_seconds=85000
+    # --sync_log_clear_seconds=88000
+
+  relay_ub.conf: |
+    Name: RtSeRelay
+    ChunkThreadNum:10
+    ContextTimeOut:200
+    
+    [UbServer]
+    Name:relay
+    Port:8193
+    SockType:7
+    LogPrint:1
+    CloseDefaultMonitor:1
+    ReadBufSize:100000000
+    WriteBufSize:100000000
+    UserBufSize:100000000
+    ConnectTimeout:500
+    ReadTimeout:2000
+    WriteTimeout:2000
+    KeepAliveTimeout:2000
+    ThreadNum:10
+    ConnectType:SHORT
+    ServerType:2
+    SxpoolNetIoThreadNum:10
+    SxpoolCallbackDirectly:1
+    QueueSize:80
+    SockSize:200
+    AuthFile:
+    GalileoRegisterEnable:0
+    GalileoRegisterData:
+    GalileoAclEnable:
+    GalileoSvrList:
+    GalileoPath:
+    StackSize:0
+    ThreadSched:0
+    ProducerPriority:10
+    WorkerPriority:8
+    # end of file
+
+  ub_client.conf: |
+    [UbClientConfig]
+    ConfType : 1
+    [.Reactor]
+    ThreadNum : 2
+    CheckTime : 1
+    [.UbClient]
+    [..@Service]
+    Name  : RtSeRelay 
+    DefaultConnectTimeOut  :  1000
+    DefaultReadTimeOut  :  1000
+    DefaultWriteTimeOut  :  1000
+    DefaultMaxConnect  :  10
+    DefaultRetry  :  5
+    DefaultConnectType  :  LONG
+    DefaultLinger  :  0
+    DefaultPort : 8193 
+    SendBuf  :  10000000
+    RecvBuf  :  10000000
+    [...CurrStrategy]
+    ClassName  :  UbClientStrategy 
+    UserDefArg1  :  test1
+    UserDefArg2  :  test2
+    [...CurrHealthy]
+    ClassName  :  UbClientHealthyChecker 
+    UserDefArg1  :  test1
+    UserDefArg2  :  test2
+    [...@Server]
+    IP : 127.0.0.1

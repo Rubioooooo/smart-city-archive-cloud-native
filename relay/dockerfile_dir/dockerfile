@@ -1,0 +1,18 @@
+FROM registry.example.com/ist/centos:7
+
+
+ADD relay/ /home/idl-face/relay
+ADD relay_start.sh /home/idl-face/relay/bin/relay_start.sh
+
+RUN useradd idl-face -s /sbin/nologin && /bin/cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+
+
+WORKDIR /home/idl-face/relay/ 
+
+EXPOSE 8192
+
+ENV LD_LIBRARY_PATH=/home/idl-face/relay/so/
+ENV TZ=Asia/Shanghai
+
+CMD /bin/sh /home/idl-face/relay/bin/relay_start.sh
+

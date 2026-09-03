@@ -1,0 +1,1 @@
+docker run -p 8192:8192 --name test relay:v1.0
