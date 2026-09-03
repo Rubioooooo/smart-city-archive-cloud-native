@@ -1,0 +1,105 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.web.name | default .Release.Name }}-deployment
+  labels:
+    deployment: {{ .Values.web.name | default .Release.Name }}
+spec:
+  selector:
+    matchLabels:
+      app: "{{ .Values.web.name }}"
+  {{- if .Values.web.strategy }}
+  strategy:
+  {{ toYaml .Values.web.strategy | indent 2 }}
+  {{- else }}
+  strategy:
+    type: Recreate
+  {{- end }}
+  replicas: {{ .Values.web.replicaCount | default 1 }}
+  template:
+    metadata:
+      labels:
+        app: "{{ .Values.web.name }}"
+        {{- if .Values.web.labels }}
+        ## Custom pod labels
+{{ toYaml .Values.web.labels | indent 8 }}
+        {{- end }}
+    spec:
+      dnsPolicy: ClusterFirstWithHostNet
+      hostNetwork: {{ .Values.web.hostNetwork | default false }}
+      restartPolicy: Always
+      {{- if .Values.web.nodeSelector }}
+      nodeSelector:
+        {{- range $key, $val :=  .Values.web.nodeSelector }}
+        {{$key}}: {{$val}}
+        {{- end }}
+      {{- end}}
+      {{- if .Values.web.affinity }}
+      affinity:
+      {{ tpl .Values.web.affinity . | indent 8 }}
+      {{- end }}
+      containers:
+      - name: {{ .Values.web.name | default .Release.Name }} 
+        image: "{{ .Values.web.image }}:{{ .Values.web.imageTag }}"
+        imagePullPolicy: IfNotPresent #三个选择Always、Never、IfNotPresent
+        {{- if .Values.web.command }}
+        command: 
+        {{- range .Values.web.command}}
+          - {{.}}
+        {{- end }}
+        {{- end }}
+        {{- if .Values.web.args }}
+        args: 
+          {{- range .Values.web.args }}
+          {{- if contains "_json" .}}
+          {{- $val := $.Values.web._json | toJson | quote }}
+          {{- $valjson := list "xxx" $val "xxx" | join ""}}
+          - '{{ . | substr 0 (. | len | add -5 | int) }}{{ $valjson | replace "\\\\\\" "\\" | replace "\\\\u0026" "&" | replace "xxx\"\\\"" "\"" | replace "\\\"\"xxx" "\""}}' #开头结尾加xxx来替换\"避免误替换;其余的替换是 转义替换为 本身、
+          {{- else }}
+          - {{.}}
+          {{- end }}
+          {{- end }}
+        {{- end }}
+        {{- if .Values.web.env }}    
+        resources: 
+        {{- range $key, $json := .Values.web.resources }}
+          {{$key}}:
+        {{- range $key2, $value := $json}}
+            {{$key2}}: {{ $value }}
+        {{- end }}
+        {{- end }}
+        {{- end }}   
+        env:
+          - name: NVIDIA_VISIBLE_DEVICES
+            value: all
+          - name: NVIDIA_DRIVER_CAPABILITIES
+            value: 'compute,utility'
+          - name: TZ
+            value: Asia/Shanghai
+        livenessProbe:
+          exec:
+            command:
+            - sh
+            - -c
+            - "ps -ef|grep 'java'|grep superarchive-v2-web-1.0.0-SNAPSHOT.jar|grep -v grep"
+          initialDelaySeconds: {{ .Values.web.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.web.livenessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.web.livenessProbe.timeoutSeconds }}
+          successThreshold: {{ .Values.web.livenessProbe.successThreshold }}
+          failureThreshold: {{ .Values.web.livenessProbe.failureThreshold }}
+        readinessProbe:
+          tcpSocket:
+            port: {{ .Values.web.targetPort }}
+          initialDelaySeconds: {{ .Values.web.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.web.readinessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.web.readinessProbe.timeoutSeconds }}
+          successThreshold: {{ .Values.web.readinessProbe.successThreshold }}
+          failureThreshold: {{ .Values.web.readinessProbe.failureThreshold }}
+        volumeMounts:
+        - name: configurations
+          mountPath: /data/aicu-tob/software/new/superarchive-v2-web/application.yml
+          subPath: application.yml
+      volumes:  #挂载持久存储卷
+      - name: configurations
+        configMap:
+          name: {{ .Values.web.name }}-configmap

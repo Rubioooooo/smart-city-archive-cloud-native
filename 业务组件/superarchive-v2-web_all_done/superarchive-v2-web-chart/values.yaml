@@ -1,0 +1,51 @@
+web:
+  name: superarchive-v2-web
+  hostNetwork: true
+  # 物理机端口
+  nodePort: 18087
+  # svc端口
+  service:
+    annotations: {}
+    type: NodePort
+    port: 8087
+  # pod端口
+  targetPort: 8087
+
+  replicaCount: 1
+  image: superarchive-v2-web
+  imageTag: v1.0.1
+
+  redis:
+    #ip: 127.0.0.1
+    #port: 9999
+    ip: redis-master.default.svc.cluster.local.
+    port: 6379
+    db: 0
+    pass: ""
+  odp:
+    #ip: 192.0.2.10
+    ip: odp-service.default.svc.cluster.local. 
+    port: 8400
+
+  livenessProbe:
+    initialDelaySeconds: 30
+    periodSeconds: 15
+    timeoutSeconds: 60
+    failureThreshold: 8
+    successThreshold: 1
+  readinessProbe:
+    initialDelaySeconds: 15
+    periodSeconds: 10
+    timeoutSeconds: 1
+    successThreshold: 1
+    failureThreshold: 3
+
+  resources:
+    requests:
+      cpu: 1
+      memory: 1Gi
+      nvidia.com/gpu: 1
+    limits:
+      cpu: 4
+      memory: 4Gi
+      nvidia.com/gpu: 1

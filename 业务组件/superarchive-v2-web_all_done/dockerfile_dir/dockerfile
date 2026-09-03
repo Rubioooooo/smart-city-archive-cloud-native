@@ -1,0 +1,16 @@
+FROM centos7-gcc82-glibc-2.18:v1.0
+
+ADD jdk1.8.0_131.tar.gz /data/aicu-tob/software/
+ADD lib64.tgz /data/aicu-tob/big-data/javajars/cuda/
+ADD libSearchDocAPI.so /data/aicu-tob/software/new/so/
+ADD superarchive-v2-web /data/aicu-tob/software/new/superarchive-v2-web
+
+RUN /bin/cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+WORKDIR /data/aicu-tob/software/new/superarchive-v2-web/
+
+ENV JAVA_HOME=/data/aicu-tob/software/jdk1.8.0_131
+ENV LD_LIBRARY_PATH=/data/aicu-tob/big-data/javajars/cuda/lib64
+ENV PATH=${PATH}:${JAVA_HOME}/bin
+ENV TZ=Asia/Shanghai
+
+CMD /bin/sh /data/aicu-tob/software/new/superarchive-v2-web/start-web.sh 

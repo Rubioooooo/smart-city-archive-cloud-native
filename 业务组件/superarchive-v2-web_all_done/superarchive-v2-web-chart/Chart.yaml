@@ -1,0 +1,4 @@
+apiVersion: v1
+description: A Helm chart for superarchive-v2-web Kubernetes.
+name: superarchive-v2-web
+version: 1.0.1-20220513
