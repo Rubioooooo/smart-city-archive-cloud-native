@@ -1,0 +1,122 @@
+sync:
+  name: superarchive-sync
+  hostNetwork: true
+  # 物理机端口
+  nodePort: 18102
+  # svc端口
+  service:
+    annotations: {}
+    type: NodePort
+    port: 8102
+  # pod端口
+  targetPort: 8102
+
+  replicaCount: 1
+  image: superarchive-sync
+  imageTag: v1.0.3.1
+  consul:
+    ip: 127.0.0.1
+    #ip: consul-service.default.svc.cluster.local.
+    port: 8500
+
+
+  # primaryMysql设置的不是aise中的databus，而是superarchive-v2-sync的上游数据库地址，
+  primaryMysql:  
+    # 如果只是测试，没有上游库，那么此处可以指定本地库的地址
+    # 然后执行脚本导入数据到本地库，该脚本直接放在物理上，命令如下
+    # cd superarchive-sync_all_done/internal_test_sql
+    # sh import_sql.sh
+    ip: mysql-ha-leader.default.svc.cluster.local.  # 该svc可以采用创建externalName类型的svc、或者自建endpoint来关联svc
+    port: 3306
+
+    user: root
+    pass: xxxxx
+    db: abf
+    
+    
+  # secondaryMysql才是对接的下游的库，即aise集群中的databus
+  secondaryMysql:    
+    # 需要写数据库，所以用databus的主库的svc
+    ip: master-service.default.svc.cluster.local.
+    port: 3306
+
+    user: root
+    pass: xxxxxxx
+    db: superarchivev2
+  redis:
+    #ip: 127.0.0.1
+    #port: 9999
+    ip: redis-master.default.svc.cluster.local.
+    port: 6379
+    db: 7
+    pass: ""
+
+    
+  # 城市盾牌服务地址
+  sfg:
+    ip: 192.0.2.20
+    port: 8762
+ 
+  snapshot:
+    syncSize: 20
+    threadMax: 12
+    retryTimes: 3
+    poolSize: 10000
+    cron: 0/1 * * * * ?
+    # 10、配置为城市盾佩人脸小图地址
+    imageUrl: http://198.51.100.10:8237/defense/api/v1/file/image?id=
+    # 11、配置为城市盾牌背景图地址
+    bgImageUrl: http://198.51.100.10:8237/defense/api/v1/file/image?id=
+    imageQualify: true
+    historyProcessSize: 1000
+    maxHistorySizeLimit: 10000
+    syncEnd: -1
+    imageSignal: http://
+    sfgImageSignal: http://
+    #createTimeStart: "1623042189619"
+    #createTimeEnd: "1623042244669"
+    createTimeStart: 1623042189619
+    createTimeEnd: 1623042244669
+    storageImage: false
+    ipReplace: 192.0.2.30
+    portReplace: 9999
+    # 用于image_id,background_image_id 地址替换(主要是为了解决公安双网架构通信问题)
+    replaceUrlOne: http://198.51.100.10:8237
+    # 网关地址 非双网情况下，同replaceUrlOne的ip;
+    ipReplaceOne: 198.51.100.10
+    # 网关端口 非双网情况下，同replaceUrlOne的port;
+    portReplaceOne: 8237
+    replaceUrlTwo: 203.0.113.10:8180 # 作用同replaceUrlOne，解决多图片服务数据源的情况; ipReplaceTwo: 203.0.113.12
+    ipReplaceTwo: 203.0.113.12
+    portReplaceTwo: 8181
+    
+    replaceUrlThree: 203.0.113.11:8080 # 作用同replaceUrlOne，解决多图片服务数据源的情况; ipReplaceThree: 203.0.113.12
+    ipReplaceThree: 203.0.113.12
+    portReplaceThree: 8180
+    replaceUrlFour: 203.0.113.10:8081 # 作用同replaceUrlOne，解决多图片服务数据源的情况; ipReplaceFour: 203.0.113.12
+    ipReplaceFour: 203.0.113.12
+    portReplaceFour: 8182
+    useFeature: true
+
+  livenessProbe:
+    initialDelaySeconds: 30
+    periodSeconds: 15
+    timeoutSeconds: 60
+    failureThreshold: 8
+    successThreshold: 1
+  readinessProbe:
+    initialDelaySeconds: 15
+    periodSeconds: 10
+    timeoutSeconds: 1
+    successThreshold: 1
+    failureThreshold: 3
+
+  resources:
+    requests:
+      cpu: 1
+      memory: 1Gi
+      nvidia.com/gpu: 1
+    limits:
+      cpu: 4
+      memory: 4Gi
+      nvidia.com/gpu: 1

@@ -1,0 +1,186 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+    name: {{ .Values.sync.name }}-configmap
+    namespace: {{ .Release.Namespace }}
+    labels:
+        app: "{{ .Values.sync.name }}"
+        chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+        heritage: "{{ .Release.Service }}"
+        release: "{{ .Release.Name }}"
+data:
+    application.yml: |
+        server:
+          # 1、修改端口
+          port: {{ .Values.sync.targetPort }}
+        #
+        spring:
+          profiles:
+            active: online
+          application:
+            # 2、修改
+            name: {{ .Values.sync.name }}
+          datasource:
+            # 3、修改primary库，即superarchive-v2-sync的上游数据库地址，如果只是测试，没有上游库，那么可以指定本地库的地址，
+            #    然后在本地库中创建一个叫abf的库，导入snap.sql来进行测试
+            primary:
+              driver-class-name: com.mysql.jdbc.Driver
+              url: jdbc:mysql://{{ .Values.sync.primaryMysql.ip }}:{{ .Values.sync.primaryMysql.port }}/{{ .Values.sync.primaryMysql.db }}?characterEncoding=UTF-8&useSSL=false
+              username: {{ .Values.sync.primaryMysql.user }}
+              password: {{ .Values.sync.primaryMysql.pass }}
+        
+            # 4、修改secondary库，即我们本地数据库的地址，本地已经创建好了库superarchivev2
+            secondary:
+              driver-class-name: com.mysql.jdbc.Driver
+              url: jdbc:mysql://{{ .Values.sync.secondaryMysql.ip }}:{{ .Values.sync.secondaryMysql.port }}/{{ .Values.sync.secondaryMysql.db }}?characterEncoding=UTF-8&useSSL=false
+              username: {{ .Values.sync.secondaryMysql.user }}
+              password: {{ .Values.sync.secondaryMysql.pass }}
+          jpa:
+            hibernate:
+              ddl-auto: none
+              primary-dialect: org.hibernate.dialect.MySQL55Dialect
+              secondary-dialect: org.hibernate.dialect.MySQL55Dialect
+              naming:
+                physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+        
+          redis:
+            # 5、单机链接，指定一个ip地址即可
+            port: {{ .Values.sync.redis.port }}
+            host: {{ .Values.sync.redis.ip }}
+            password: {{ .Values.sync.redis.pass }}
+            database: {{ .Values.sync.redis.db }}
+            # 可以改用集群链接（推荐，省去了代理+vip环节）：填入所有redis集群节点的ip地址与端口
+            #password: xxxx
+            #cluster:
+            #  #nodes: 192.0.2.10:7001,192.0.2.24:7002,192.0.2.25:7003,192.0.2.24:7004,192.0.2.25:7005,192.0.2.10:7006
+            #  nodes: 127.0.0.1:9999
+            #  max-redirects: 3
+            #pool:
+            #  max-idle: 16
+            #  max-active: 32
+            #  min-idle: 8
+        
+          quartz:
+            wait-for-jobs-to-complete-on-shutdown: true
+            startup-delay: 6s
+        
+
+        brpc:
+          global:
+            client:
+              protocol-type: 1 # rpc
+            #      interceptor-bean-names: validateInterceptor
+            naming:
+              # 6、指定consul的地址
+              naming-service-url: consul://{{ .Values.sync.consul.ip }}:{{ .Values.sync.consul.port }}
+          custom:
+
+            com.baidu.cie.superarchive.sync.service.rpc.ImageStorageService:
+              naming:
+                # 8、修改8102所在ip
+                namingServiceUrl: list://{{ .Values.sync.name }}:{{ .Values.sync.service.port }}
+              client:
+                connectTimeoutMillis: 3000
+                readTimeoutMillis: 3000
+                maxTotalConnections: 100
+                minIdleConnections: 100
+        
+        http:
+          # 9、修改城市盾牌服务地址
+          sfg:
+            url: http://{{ .Values.sync.sfg.ip }}:{{ .Values.sync.sfg.port }}
+        #    url: http://192.0.2.27:8762
+        
+        management:
+          endpoints:
+            web:
+              exposure:
+                include: '*'
+          endpoint:
+            health:
+              show-details: always
+            info:
+              enabled: true
+          info:
+            git:
+              mode: full
+        
+        sync:
+          snapshot:
+            syncSize: {{ .Values.sync.snapshot.syncSize }}
+            threadMax: {{ .Values.sync.snapshot.threadMax }}
+            retryTimes: {{ .Values.sync.snapshot.retryTimes }}
+            poolSize: {{ .Values.sync.snapshot.poolSize }}
+            cron: {{ .Values.sync.snapshot.cron }}
+            # 10、配置为城市盾佩人脸小图地址
+            imageUrl: {{ .Values.sync.snapshot.imageUrl }}
+            # 11、配置为城市盾牌背景图地址
+            bgImageUrl: {{ .Values.sync.snapshot.bgImageUrl }}
+            imageQualify: {{ .Values.sync.snapshot.imageQualify }}
+            historyProcessSize: {{ .Values.sync.snapshot.historyProcessSize }}
+            maxHistorySizeLimit: {{ .Values.sync.snapshot.maxHistorySizeLimit }}
+            syncEnd: {{ .Values.sync.snapshot.syncEnd }}
+            imageSignal: {{ .Values.sync.snapshot.imageSignal }}
+            sfgImageSignal: {{ .Values.sync.snapshot.sfgImageSignal }}
+            createTimeStart: {{ .Values.sync.snapshot.createTimeStart }}
+            createTimeEnd: {{ .Values.sync.snapshot.createTimeEnd }}
+            storageImage: {{ .Values.sync.snapshot.storageImage }}
+            ipReplace: {{ .Values.sync.snapshot.ipReplace }}
+            portReplace: {{ .Values.sync.snapshot.portReplace }}
+            # 用于image_id,background_image_id 地址替换(主要是为了解决公安双网架构通信问题)
+            replaceUrlOne: {{ .Values.sync.snapshot.replaceUrlOne }}
+            # 网关地址 非双网情况下，同replaceUrlOne的ip;
+            ipReplaceOne: {{ .Values.sync.snapshot.ipReplaceOne }}
+            # 网关端口 非双网情况下，同replaceUrlOne的port;
+            portReplaceOne: {{ .Values.sync.snapshot.portReplaceOne }}
+            replaceUrlTwo: {{ .Values.sync.snapshot.ipReplaceTwo }}  # 作用同replaceUrlOne，解决多图片服务数据源的情况; ipReplaceTwo: 203.0.113.12
+            ipReplaceTwo: {{ .Values.sync.snapshot.ipReplaceTwo }}
+            portReplaceTwo: {{ .Values.sync.snapshot.portReplaceTwo }}
+        
+            replaceUrlThree: {{ .Values.sync.snapshot.replaceUrlThree }}  # 作用同replaceUrlOne，解决多图片服务数据源的情况; ipReplaceThree: 203.0.113.12
+            ipReplaceThree: {{ .Values.sync.snapshot.ipReplaceThree }}
+            portReplaceThree: {{ .Values.sync.snapshot.portReplaceThree }}
+            replaceUrlFour: {{ .Values.sync.snapshot.replaceUrlFour }}  # 作用同replaceUrlOne，解决多图片服务数据源的情况; ipReplaceFour: 203.0.113.12
+            ipReplaceFour: {{ .Values.sync.snapshot.ipReplaceFoure }}
+            portReplaceFour: {{ .Values.sync.snapshot.portReplaceFour }}
+            useFeature: {{ .Values.sync.snapshot.useFeature }}
+          qualify:
+            width: 20.0
+            height: 20.0
+            prob: 0.3
+            yaw: 50
+            pitch: 30
+            blur: 1
+            faceOccLupRob: 1.0
+            illumination: 10
+            complete: 0.3
+            faceScore: 0.5
+            faceQuality: 0.5
+        
+        db:
+          poolSize: 1000
+        
+        
+        swagger:
+          enabled: true
+          title: 一人一档snapshot-sync
+          basePackage: "com.baidu.cie.superarchive.sync.controller"
+        
+        
+        ---
+        spring:
+          profiles: online
+        logging:
+          dir: /data/aicu-tob/software/new/superarchive-sync/logs/sync
+          lv: DEBUG
+        ---
+        spring:
+          profiles: dev
+        logging:
+          config: classpath:logs/logback-spring.xml
+        
+        ---
+        spring:
+          profiles: local
+        logging:
+          config: classpath:logs/logback-local.xml

@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.sync.name }}
+spec:
+  type: {{ .Values.sync.service.type }}
+  ports:
+  - name: {{ .Values.sync.name }}
+    port: {{ .Values.sync.service.port }}
+    protocol: TCP
+    targetPort: {{ .Values.sync.targetPort }}
+    {{ if eq .Values.sync.service.type "NodePort" }}
+    nodePort: {{ .Values.sync.nodePort }}
+    {{ end }}
+  selector:
+    app: "{{ .Values.sync.name }}"

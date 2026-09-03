@@ -1,0 +1,101 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.sync.name | default .Release.Name }}-deployment
+  labels:
+    deployment: {{ .Values.sync.name | default .Release.Name }}
+spec:
+  selector:
+    matchLabels:
+      app: "{{ .Values.sync.name }}"
+  {{- if .Values.sync.strategy }}
+  strategy:
+  {{ toYaml .Values.sync.strategy | indent 2 }}
+  {{- else }}
+  strategy:
+    type: Recreate
+  {{- end }}
+  replicas: {{ .Values.sync.replicaCount | default 1 }}
+  template:
+    metadata:
+      labels:
+        app: "{{ .Values.sync.name }}"
+        {{- if .Values.sync.labels }}
+        ## Custom pod labels
+{{ toYaml .Values.sync.labels | indent 8 }}
+        {{- end }}
+    spec:
+      dnsPolicy: ClusterFirstWithHostNet
+      hostNetwork: {{ .Values.sync.hostNetwork | default false }}
+      restartPolicy: Always
+      {{- if .Values.sync.nodeSelector }}
+      nodeSelector:
+        {{- range $key, $val :=  .Values.sync.nodeSelector }}
+        {{$key}}: {{$val}}
+        {{- end }}
+      {{- end}}
+      {{- if .Values.sync.affinity }}
+      affinity:
+      {{ tpl .Values.sync.affinity . | indent 8 }}
+      {{- end }}
+      containers:
+      - name: {{ .Values.sync.name | default .Release.Name }} 
+        image: "{{ .Values.sync.image }}:{{ .Values.sync.imageTag }}"
+        imagePullPolicy: IfNotPresent #三个选择Always、Never、IfNotPresent
+        {{- if .Values.sync.command }}
+        command: 
+        {{- range .Values.sync.command}}
+          - {{.}}
+        {{- end }}
+        {{- end }}
+        {{- if .Values.sync.args }}
+        args: 
+          {{- range .Values.sync.args }}
+          {{- if contains "_json" .}}
+          {{- $val := $.Values.sync._json | toJson | quote }}
+          {{- $valjson := list "xxx" $val "xxx" | join ""}}
+          - '{{ . | substr 0 (. | len | add -5 | int) }}{{ $valjson | replace "\\\\\\" "\\" | replace "\\\\u0026" "&" | replace "xxx\"\\\"" "\"" | replace "\\\"\"xxx" "\""}}' #开头结尾加xxx来替换\"避免误替换;其余的替换是 转义替换为 本身、
+          {{- else }}
+          - {{.}}
+          {{- end }}
+          {{- end }}
+        {{- end }}
+        {{- if .Values.sync.env }}    
+        resources: 
+        {{- range $key, $json := .Values.sync.resources }}
+          {{$key}}:
+        {{- range $key2, $value := $json}}
+            {{$key2}}: {{ $value }}
+        {{- end }}
+        {{- end }}
+        {{- end }}   
+        livenessProbe:
+          exec:
+            command:
+            - sh
+            - -c
+            - "ps -ef|grep 'java'|grep superarchive-sync.jar|grep -v grep"
+          initialDelaySeconds: {{ .Values.sync.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.sync.livenessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.sync.livenessProbe.timeoutSeconds }}
+          successThreshold: {{ .Values.sync.livenessProbe.successThreshold }}
+          failureThreshold: {{ .Values.sync.livenessProbe.failureThreshold }}
+        readinessProbe:
+          tcpSocket:
+            port: {{ .Values.sync.targetPort }}
+          initialDelaySeconds: {{ .Values.sync.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.sync.readinessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.sync.readinessProbe.timeoutSeconds }}
+          successThreshold: {{ .Values.sync.readinessProbe.successThreshold }}
+          failureThreshold: {{ .Values.sync.readinessProbe.failureThreshold }}
+        env:
+        - name: TZ
+          value: Asia/Shanghai
+        volumeMounts:
+        - name: configurations
+          mountPath: /data/aicu-tob/software/new/superarchive-sync/application.yml
+          subPath: application.yml
+      volumes:  #挂载持久存储卷
+      - name: configurations
+        configMap:
+          name: {{ .Values.sync.name }}-configmap
