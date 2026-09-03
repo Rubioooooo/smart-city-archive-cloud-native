@@ -1,0 +1,90 @@
+# aise-gd对aise的访问地址是动态生成的，所以该文件中不需要配置
+image: aise-gd
+imageTag: v1.0
+imagePullPolicy: IfNotPresent
+cronjobImage: aise-gd-tool
+cronjobImageTag: v1.0
+
+
+service:
+  annotations: {}
+  type: ClusterIP
+  port: 8809
+serviceport: 8809
+
+Replicas: 1
+args: []
+
+extraVolumes: '# - name: extras
+
+  #   emptyDir: {}
+
+  '
+extraVolumeMounts: '# - name: extras
+
+  #   mountPath: /usr/share/extras
+
+  #   readOnly: true
+
+  '
+extraInitContainers: '# - name: do-something
+
+  #   image: busybox
+
+  #   command: [''do'', ''something'']
+
+  '
+nodeSelector: {}
+tolerations: []
+livenessProbe:
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 5
+  successThreshold: 1
+  failureThreshold: 3
+readinessProbe:
+  initialDelaySeconds: 15
+  periodSeconds: 10
+  timeoutSeconds: 1
+  successThreshold: 1
+  failureThreshold: 3
+persistence:
+  enabled: true
+  size: 10Gi
+  accessMode: ReadWriteOnce
+  storageClass: local-path
+resources:
+  requests:
+    cpu: 100m
+    memory: 1Gi
+  limits:
+    cpu: 4
+    memory: 60Gi
+#尚未定制
+#metrics:
+#  enabled: false
+#  image: prom/relay-exporter
+#  imageTag: v1.0
+#  imagePullPolicy: IfNotPresent
+#  resources: {}
+#  annotations: {}
+#  livenessProbe:
+#    initialDelaySeconds: 15
+#    timeoutSeconds: 5
+#  readinessProbe:
+#    initialDelaySeconds: 5
+#    timeoutSeconds: 1
+#  flags: []
+#  serviceMonitor:
+#    enabled: false
+#    additionalLabels: {}
+
+deploymentAnnotations: {}
+podAnnotations: {}
+podLabels: {}
+initContainer:
+  resources:
+    requests:
+      memory: 10Mi
+      cpu: 10m
+

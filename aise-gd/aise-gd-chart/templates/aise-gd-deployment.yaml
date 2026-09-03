@@ -1,0 +1,112 @@
+apiVersion: apps/v1
+#kind: StatefulSet
+kind: Deployment
+metadata:
+  name: {{ template "aise-gd.fullname" . }}
+  annotations:
+    reloader.stakater.com/auto: "true"  # 注意添加这一行
+  namespace: {{ .Release.Namespace }}
+  labels:
+    type: aise-gd
+    app: {{ template "aise-gd.fullname" . }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
+spec:
+  selector:
+    matchLabels:
+      app: "{{ template "aise-gd.fullname" . }}-ist"
+  replicas: {{ default 1 .Values.Replicas }}
+  template:
+    metadata:
+      labels:
+        app: "{{ template "aise-gd.fullname" . }}-ist"
+        type: aise-gd
+{{- if .Values.podLabels }}
+{{- with .Values.podLabels }}
+{{ toYaml . | indent 10 }}
+{{- end }}
+{{- end }}
+{{- with .Values.podAnnotations }}
+      annotations:
+{{ toYaml . | indent 8 }}
+{{- end }}
+    spec:
+      serviceAccountName: admin
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      {{- if .Values.schedulerName }}
+      schedulerName: "{{ .Values.schedulerName }}"
+      {{- end }}
+      {{- if .Values.imagePullSecrets }}
+      imagePullSecrets:
+{{ toYaml .Values.imagePullSecrets | indent 8 }}
+      {{- end }}
+      {{- if .Values.affinity }}
+      affinity:
+      {{ tpl .Values.affinity . | indent 8 }}
+      {{- end }}
+      {{- if .Values.nodeSelector }}
+      nodeSelector:
+      {{ toYaml .Values.nodeSelector | indent 8 }}
+      {{- end }}
+      {{- if .Values.priorityClassName }}
+      priorityClassName: "{{ .Values.priorityClassName }}"
+      {{- end }} 
+      {{- if .Values.extraInitContainers }}
+{{ tpl .Values.extraInitContainers . | indent 6 }}
+      {{- end }}
+      {{- if .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml .Values.nodeSelector | indent 8 }}
+      {{- end }}
+      {{- if .Values.tolerations }}
+      tolerations:
+{{ toYaml .Values.tolerations | indent 8 }}
+      {{- end }}
+      volumes:
+      - name: config-volume
+        configMap:
+          name: aise-gd-statefulset-configmap
+      containers:
+      - name: {{ template "aise-gd.fullname" . }}
+        image: "{{ .Values.image }}:{{ .Values.imageTag }}"
+        imagePullPolicy: {{ .Values.imagePullPolicy | quote }}
+        #command: ["tail","-f","/dev/null"]
+        {{- with .Values.args }}
+        args:
+        {{- range . }}
+          - {{ . | quote }}
+        {{- end }}
+        {{- end }}
+        resources:
+{{ toYaml .Values.resources | indent 10 }}
+        livenessProbe:
+          exec:
+            command:
+            - sh
+            - -c
+            - "ps aux |grep face-aise | grep -v supervise.face-aise |grep -v grep |grep -v tail &>/dev/null"
+          initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.livenessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.livenessProbe.timeoutSeconds }}
+          successThreshold: {{ .Values.livenessProbe.successThreshold }}
+          failureThreshold: {{ .Values.livenessProbe.failureThreshold }}
+        readinessProbe:
+          tcpSocket:
+            port: {{ .Values.serviceport }}
+          initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.readinessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds }}
+          successThreshold: {{ .Values.readinessProbe.successThreshold }}
+          failureThreshold: {{ .Values.readinessProbe.failureThreshold }}
+        env:
+        - name: TZ
+          value: Asia/Shanghai
+        volumeMounts:
+          - name: config-volume
+            mountPath: /home/idl-face/aise_1.0.29.1/conf/router.conf
+            subPath: router.conf
+          - name: config-volume
+            mountPath: /home/idl-face/aise_1.0.29.1/conf/aise.conf
+            subPath: aise.conf

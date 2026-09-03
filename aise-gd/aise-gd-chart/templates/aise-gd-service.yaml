@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: aise-gd-service
+spec:
+  ports:
+    - name: aise-gd
+      port: {{ .Values.service.port }}
+      protocol: TCP
+      targetPort: {{ .Values.serviceport }}
+  selector:
+    app: "{{ template "aise-gd.fullname" . }}-ist"

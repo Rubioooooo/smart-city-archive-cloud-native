@@ -1,0 +1,2 @@
+#docker run -ti --privileged=true -e gpus=all  -e NVIDIA_DRIVER_CAPABILITIES="compute,utility" -e NVIDIA_VISIBLE_DEVICES=all --name test aise:v1.0
+docker run -ti --name test aise-gd:v1.0
