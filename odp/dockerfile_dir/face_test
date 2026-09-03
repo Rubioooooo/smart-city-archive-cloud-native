@@ -1,0 +1,4 @@
+#!/bin/bash 
+
+cd /home/idl-face/odp
+/usr/bin/python test_idl_v3.0.py --v3 $1 $2

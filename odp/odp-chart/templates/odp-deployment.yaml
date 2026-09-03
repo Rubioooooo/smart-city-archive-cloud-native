@@ -1,0 +1,121 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.odp.name | default .Release.Name }}-deployment
+  labels:
+    deployment: {{ .Values.odp.name | default .Release.Name }}
+spec:
+  selector:
+    matchLabels:
+      app: "odp"
+  {{- if .Values.odp.strategy }}
+  strategy:
+  {{ toYaml .Values.odp.strategy | indent 2 }}
+  {{- else }}
+  strategy:
+    type: Recreate
+  {{- end }}
+  replicas: {{ .Values.odp.replicaCount | default 1 }}
+  template:
+    metadata:
+      labels:
+        app: "odp"
+        {{- if .Values.odp.labels }}
+        ## Custom pod labels
+{{ toYaml .Values.odp.labels | indent 8 }}
+        {{- end }}
+    spec:
+      dnsPolicy: ClusterFirstWithHostNet
+      hostNetwork: {{ .Values.odp.hostNetwork | default false }}
+      restartPolicy: Always
+      {{- if .Values.odp.nodeSelector }}
+      nodeSelector:
+        {{- range $key, $val :=  .Values.odp.nodeSelector }}
+        {{$key}}: {{$val}}
+        {{- end }}
+      {{- end}}
+      {{- if .Values.odp.affinity }}
+      affinity:
+      {{ tpl .Values.odp.affinity . | indent 8 }}
+      {{- end }}
+      containers:
+      - name: {{ .Values.odp.name | default .Release.Name }} 
+        image: "{{ .Values.odp.image }}:{{ .Values.odp.imageTag }}"
+        imagePullPolicy: IfNotPresent #三个选择Always、Never、IfNotPresent
+        {{- if .Values.odp.command }}
+        command: 
+        {{- range .Values.odp.command}}
+          - {{.}}
+        {{- end }}
+        {{- end }}
+        {{- if .Values.odp.args }}
+        args: 
+          {{- range .Values.odp.args }}
+          {{- if contains "_json" .}}
+          {{- $val := $.Values.odp._json | toJson | quote }}
+          {{- $valjson := list "xxx" $val "xxx" | join ""}}
+          - '{{ . | substr 0 (. | len | add -5 | int) }}{{ $valjson | replace "\\\\\\" "\\" | replace "\\\\u0026" "&" | replace "xxx\"\\\"" "\"" | replace "\\\"\"xxx" "\""}}' #开头结尾加xxx来替换\"避免误替换;其余的替换是 转义替换为 本身、
+          {{- else }}
+          - {{.}}
+          {{- end }}
+          {{- end }}
+        {{- end }}
+        {{- if .Values.odp.env }}    
+        resources: 
+        {{- range $key, $json := .Values.odp.resources }}
+          {{$key}}:
+        {{- range $key2, $value := $json}}
+            {{$key2}}: {{ $value }}
+        {{- end }}
+        {{- end }}
+        {{- end }}   
+        env:
+        - name: INTERVAL
+          value: "{{ .Values.odp.delgroupInterval }}"
+        - name: TZ
+          value: Asia/Shanghai
+        livenessProbe:
+          exec:
+            command:
+            - ls
+            - "/home/idl-face/odp/var/hhvm.sock"
+          initialDelaySeconds: {{ .Values.odp.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.odp.livenessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.odp.livenessProbe.timeoutSeconds }}
+          successThreshold: {{ .Values.odp.livenessProbe.successThreshold }}
+          failureThreshold: {{ .Values.odp.livenessProbe.failureThreshold }}
+        readinessProbe:
+          tcpSocket:
+            port: {{ .Values.odp.targetPort }}
+          initialDelaySeconds: {{ .Values.odp.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.odp.readinessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.odp.readinessProbe.timeoutSeconds }}
+          successThreshold: {{ .Values.odp.readinessProbe.successThreshold }}
+          failureThreshold: {{ .Values.odp.readinessProbe.failureThreshold }}
+        volumeMounts:
+        - name: configurations
+          mountPath: /tmp/aise.conf
+          subPath: aise.conf
+        - name: configurations
+          mountPath: /tmp/feature.conf
+          subPath: feature.conf
+        - name: configurations
+          mountPath: /tmp/cluster.conf
+          subPath: cluster.conf
+
+        #- name: configurations
+        #  mountPath: /home/idl-face/odp/conf/ral/services/aise.conf
+        #  subPath: aise.conf
+        #- name: configurations
+        #  mountPath: /home/idl-face/odp/conf/ral/services/feature.conf
+        #  subPath: feature.conf
+        #- name: configurations
+        #  mountPath: /home/idl-face/odp/conf/db/cluster.conf
+        #  subPath: cluster.conf
+        - name: configurations
+          mountPath: /tmp/php.conf
+          subPath: php.conf
+      volumes: 
+      - name: configurations
+        configMap:
+          name: {{ .Values.odp.name }}-configmap

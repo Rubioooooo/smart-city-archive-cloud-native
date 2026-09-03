@@ -1,0 +1,18 @@
+FROM registry.example.com/ist/centos:7
+
+# 时区
+ADD Shanghai /etc/localtime
+ADD odp /home/idl-face/odp
+ADD odp_start.sh /home/idl-face/odp/bin/odp_start.sh
+ADD face_test /usr/bin/face_test
+ADD net-tools-2.0-0.25.20131004git.el7.x86_64.rpm /tmp/net-tools-2.0-0.25.20131004git.el7.x86_64.rpm
+
+RUN yum -y localinstall /tmp/net-tools-2.0-0.25.20131004git.el7.x86_64.rpm && rm -rf /tmp/*.rpm && mkdir -p /home/vis/install/tmp && ln -s /home/idl-face/odp /home/vis/install/tmp/odp && useradd idl-face && chown -R idl-face.idl-face /home/idl-face/odp /home/vis/install/tmp/odp && chmod +x /usr/bin/face_test
+
+# 时区设置
+ENV TZ=Asia/Shanghai
+WORKDIR /home/idl-face/odp
+
+
+# 启动脚本
+CMD /bin/sh /home/idl-face/odp/bin/odp_start.sh

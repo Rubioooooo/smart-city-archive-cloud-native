@@ -1,0 +1,45 @@
+odp:
+  name: odp
+  # 端口统一改为8400，不要采用8300，否则会与consul冲突
+  # 物理机端口
+  nodePort: 8400
+  # svc端口
+  port: 8400
+  # pod端口
+  targetPort: 8400
+  replicaCount: 1
+  image: odp
+  imageTag: v1.0
+  gd:
+    #ip: 192.0.2.10
+    ip: aise-gd-service.default.svc.cluster.local.
+    port: 8809
+  feature:
+    #ip: 192.0.2.10
+    ip: feature-service.default.svc.cluster.local. 
+    port: 8815
+  
+  # 组删除脚本(异步删除组数据)的执行时间间隔。单位s
+  # pod内执行命令为：/home/idl-face/odp/hhvm/bin/hhvm /home/idl-face/odp/app/face-api/script/DeleteGroup.php
+  delgroupInterval: 300
+  
+  livenessProbe:
+    initialDelaySeconds: 30
+    periodSeconds: 15
+    timeoutSeconds: 60
+    failureThreshold: 8
+    successThreshold: 1
+  readinessProbe:
+    initialDelaySeconds: 15
+    periodSeconds: 10
+    timeoutSeconds: 1
+    successThreshold: 1
+    failureThreshold: 3
+
+  resources:
+    requests:
+      cpu: 1
+      memory: 1Gi
+    limits:
+      cpu: 4
+      memory: 4Gi
