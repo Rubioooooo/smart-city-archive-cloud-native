@@ -1,0 +1,48 @@
+# ============================================================
+# Artifact policy — precise rules only（详见 docs/artifact-policy.md）
+# 纪律：禁止使用过宽规则（*.sql / config / data/ / bin/ / *.yaml / *.tar.gz），
+#       防止误伤源码与配置；只允许下面这类精确规则。
+# ============================================================
+
+# --- 集群凭据物料（绝不入库） ---
+**/*.kubeconfig
+aise-gd/镜像制作/job_dockerfile_dir/config
+**/client-key*
+**/kubeconfig
+**/kubeconfig.*
+**/*.key
+*.pem
+
+# --- 生产数据集（绝不入库） ---
+**/snap.sql
+**/vehicle.sql
+**/*.dump
+**/*.sql.gz
+
+# --- 专有业务运行时 / 第三方工具二进制 / 构建产物 ---
+**/kubectl
+**/helm
+**/yq_linux_amd64
+**/localedef
+**/mysql
+**/libSearchDocAPI.so
+**/*.rpm
+**/gcc-*.tar.gz
+**/jdk*.tar.gz
+**/package_cuda*.tar.gz
+**/perl.tgz
+**/lib64.tgz
+**/*.tgz
+install.cmd
+
+# --- 本地 / 编辑器 / 运行时 ---
+*.log
+*.pid
+*.tmp
+*.swp
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+__pycache__/
+.pytest_cache/
