@@ -1,0 +1,191 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ template "aise-se.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    type: aise-se
+    app: {{ template "aise-se.fullname" . }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
+spec:
+  #serviceName: {{ template "aise-se.fullname" . }}
+  serviceName: aise-se-service
+  selector:
+    matchLabels:
+      app: "{{ template "aise-se.fullname" . }}-ist"
+  replicas: {{ default 6 .Values.Replicas }}
+  updateStrategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: "{{ template "aise-se.fullname" . }}-ist"
+        type: aise-se
+{{- if .Values.podLabels }}
+{{- with .Values.podLabels }}
+{{ toYaml . | indent 10 }}
+{{- end }}
+{{- end }}
+{{- with .Values.podAnnotations }}
+      annotations:
+{{ toYaml . | indent 8 }}
+{{- end }}
+    spec:
+      # 使容器内拥有操作k8s的RBAC权限
+      serviceAccountName: admin
+      #hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      {{- if .Values.schedulerName }}
+      schedulerName: "{{ .Values.schedulerName }}"
+      {{- end }}
+      {{- if .Values.imagePullSecrets }}
+      imagePullSecrets:
+{{ toYaml .Values.imagePullSecrets | indent 8 }}
+      {{- end }}
+
+#      {{- if .Values.affinity }}
+#      affinity:
+#{{ toYaml .Values.affinity | indent 8 }}
+#      {{- end }}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution: # 软件策略，不能使用硬策略（副本数超过了节点数则会出现无法调度的情况）
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - {key: app,operator: In,values: ['{{ template "aise-se.fullname" . }}-ist']}
+              topologyKey: kubernetes.io/hostname
+
+      {{- if .Values.nodeSelector }}
+      nodeSelector:
+      {{ toYaml .Values.nodeSelector | indent 8 }}
+      {{- end }}
+      {{- if .Values.priorityClassName }}
+      priorityClassName: "{{ .Values.priorityClassName }}"
+      {{- end }}
+      {{- if .Values.busybox.enabled }}
+      initContainers:
+      - name: "aise-se-init"
+        image: "{{ .Values.busybox.image}}:{{ .Values.busybox.tag }}"
+        imagePullPolicy: {{ .Values.imagePullPolicy | quote }}
+        resources:
+{{ toYaml .Values.initContainer.resources | indent 10 }}
+        command:  ["rm","-rf","/home/idl-face/aise_1.0.29.1/data"]
+        volumeMounts:
+        - name: data
+          mountPath: /home/idl-face/aise_1.0.29.1/data
+          {{- if .Values.persistence.subPath }}
+          subPath: {{ .Values.persistence.subPath }}
+          {{- end }}
+      {{- if .Values.extraInitContainers }}
+{{ tpl .Values.extraInitContainers . | indent 6 }}
+      {{- end }}
+      {{- if .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml .Values.nodeSelector | indent 8 }}
+      {{- end }}
+     {{- end }}
+      {{- if .Values.tolerations }}
+      tolerations: 
+{{ toYaml .Values.tolerations | indent 8 }}
+      {{- end }}
+      containers:
+      - name: {{ template "aise-se.fullname" . }}
+        #command: ["tail","-f","/dev/null"]
+        securityContext:
+          readOnlyRootFilesystem: false
+        image: "{{ .Values.image }}:{{ .Values.imageTag }}"
+        imagePullPolicy: {{ .Values.imagePullPolicy | quote }}
+
+        {{- with .Values.args }}
+        args:
+        {{- range . }}
+          - {{ . | quote }}
+        {{- end }}
+        {{- end }}
+        resources:
+{{ toYaml .Values.resources | indent 10 }}
+        env:
+        - name: NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: TZ
+          value: Asia/Shanghai
+        {{- if .Values.aise_conf.gpu }}
+        - name: NVIDIA_VISIBLE_DEVICES
+          value: all
+        - name: NVIDIA_DRIVER_CAPABILITIES
+          value: 'compute,utility'
+        {{- end }}
+        livenessProbe:
+          #tcpSocket:
+          #  port: {{ .Values.serviceport }}
+          exec:
+            command:
+            - sh
+            - -c
+            - "ps aux |grep face-aise | grep -v supervise.face-aise |grep -v grep |grep -v tail &>/dev/null"
+          initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.livenessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.livenessProbe.timeoutSeconds }}
+          successThreshold: {{ .Values.livenessProbe.successThreshold }}
+          failureThreshold: {{ .Values.livenessProbe.failureThreshold }}
+        readinessProbe:
+          tcpSocket:
+            port: {{ .Values.serviceport }}
+          initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.readinessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds }}
+          successThreshold: {{ .Values.readinessProbe.successThreshold }}
+          failureThreshold: {{ .Values.readinessProbe.failureThreshold }}
+        volumeMounts:
+        - name: data
+          mountPath: /home/idl-face/aise_1.0.29.1/data
+          {{- if .Values.persistence.subPath }}
+          subPath: {{ .Values.persistence.subPath }}
+          {{- end }}
+
+        #- name: configurations
+        #  mountPath: /home/idl-face/aise_1.0.29.1/conf/aise.conf
+        #  subPath: aise.conf
+        - name: configurations
+          mountPath: /tmp/aise.conf
+          subPath: aise.conf
+        - name: configurations
+          mountPath: /home/idl-face/aise_1.0.29.1/conf/compare.cfg
+          subPath: compare.cfg
+        - name: configurations
+          mountPath: /home/idl-face/cctool/conf/sql.online.gconf
+          subPath: sql.online.gconf
+
+        {{- if .Values.extraVolumeMounts }}
+{{ tpl .Values.extraVolumeMounts . | indent 8 }}
+        {{- end }}
+
+      volumes:
+      - name: configurations
+        configMap:
+          name: {{ template "aise-se.fullname" . }}-configuration
+
+  {{- if .Values.persistence.enabled }}
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      accessModes:
+        - {{ .Values.persistence.accessMode | quote }}
+      resources:
+        requests:
+          storage: {{ .Values.persistence.size }}
+      {{- if .Values.persistence.storageClass }}
+      {{- if (eq "-" .Values.persistence.storageClass) }}
+      storageClassName: ""
+      {{- else }}
+      storageClassName: "{{ .Values.persistence.storageClass }}"
+      {{- end }}
+      {{- end }}
+  {{- end }}

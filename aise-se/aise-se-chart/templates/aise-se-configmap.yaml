@@ -1,0 +1,131 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "aise-se.fullname" . }}-configuration
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ template "aise-se.fullname" . }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    heritage: "{{ .Release.Service }}"
+    release: "{{ .Release.Name }}"
+data:
+  aise.conf: |
+    [agent]
+    source_type: relay
+    #relay_bns: group.face-new-relay.FACE.all
+    relay_ip: {{ .Values.out_depend_msg.relay.ip }}
+    relay_port: {{ .Values.out_depend_msg.relay.port }}
+    relay_module: face
+    relay_idxid_file: ./data/idxid
+    
+    [server]
+    port: {{ .Values.serviceport }}
+    # 服务的类型: gd, se, gd_and_se
+    type: se
+    # 处理请求的并发度限制，默认值0表示无限制
+    max_concurrency: 1000
+    # 连接在idle_time_sec时间内没有读取或者写出数据，会被server主动关闭。-1表示不开启该功能；
+    idle_time_sec: -1
+    
+    [@face_searcher]
+    version : 1
+    [.server]
+    # 用于加速计算的booster路径
+    {{- if .Values.aise_conf.gpu }}
+    gpu_booster_path: ./so/libaikl_booster.so
+    {{- end }}
+    data_file: ./data/index.all
+    
+    #ivfflat
+    #data_file: ../index.all
+    #index_file: ../data/900w.center
+    #policy_file: ../data/900w_policy.policy
+    
+    
+    load_index_batch_num: 300
+    load_index_thread_num: 16
+    
+    [.search_engine]
+    physical_partition_id: 0
+    per_logical_shard_threads: {{ .Values.aise_conf.per_logical_shard_threads }}
+    
+    feature_dimension: 128
+    block_min_size: 524288
+    block_max_size: 33554432
+    
+    # 必须要有userid, groupid
+    # options_meta 字段对应的id为按字段顺序从0开始；
+    # 自定义options_meta 需要放在index_json中，类型在options_type中指定，也支持用string表示但是必须能够转化为指定的类型;
+    options_meta: appid, groupid, userid, cameraid
+    
+    # options_type 为options_meta中字段对应的类型；
+    # 只支持int、float、double、long、longlong
+    options_type: string, string, string, int
+    
+    # 从0位开始，指定用option_meta中第几为做索引
+    bucket_options: 0,1
+    
+    # 使用gpu时，使用的显卡个数 == 逻辑分片个数
+    device_num: {{ .Values.aise_conf.device_num }}
+    
+    # M:N时，最大支持的M数
+    batch_max_num: {{ .Values.aise_conf.batch_max_num }}
+    # 走检索批量过滤时，最小的batch_size,默认10
+    gpu_filter_batch_min: {{ .Values.aise_conf.gpu_filter_batch_min }}
+    # 走检索批量过滤时，最小的阈值分数为（0-100）
+    gpu_filter_dot_min: {{ .Values.aise_conf.gpu_filter_dot_min }}
+    # 使用gpu时，同步周期ms
+    sync_interval: {{ .Values.aise_conf.sync_interval }}
+    
+    #检索预期召回率
+    recall_radio: 0.95
+    physical_capacity: 100000000
+    # 索引类型 1:direct 2:optionrange 101:ivfflat 102:gnoimi
+    index_type: 1
+    [..ivfflat]
+    coarse_clusters: 12288
+    #[..gnoimi]
+    #coarse_clusters: 2
+    #fine_clusters: 8
+    
+    [.param]
+    score_mapper_file : ./conf/compare.cfg
+    mapper_type : 0
+    group_limit : 10
+    group_order : 1
+    
+    [..@score_mapper]
+    model_version: 1
+    score_mapper_file : ./conf/compare.cfg
+    mapper_type : 0
+    
+    [..@score_mapper]
+    model_version: 2
+    score_mapper_file : ./conf/compare.cfg
+    mapper_type : 1
+    
+    
+    
+    [@dfs_searcher]
+    version : 1
+    [.server]
+    # 路由配置
+    router_file: ./conf/router.conf
+     
+    
+
+  compare.cfg: |
+{{ tpl .Values.compareCfg . | indent 3 }}
+
+  sql.online.gconf: |
+    --mysql_host={{ .Values.sqlOnlineGconf.mysql_host }}
+    --mysql_username={{ .Values.sqlOnlineGconf.mysql_username }}
+    --mysql_password={{ .Values.sqlOnlineGconf.mysql_password }}
+    --mysql_dbname={{ .Values.sqlOnlineGconf.mysql_dbname }}
+    --mysql_port={{ .Values.sqlOnlineGconf.mysql_port }}
+    
+    --all_sql=select id*%shards%+%table_shard% as gid, imageid, appid, groupid, userid, feature, user_info as info,index_json from t_pic_record_%table_shard%
+    
+    --shards=500
+    --shard_begin=0
+    --shard_end=500

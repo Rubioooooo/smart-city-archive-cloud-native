@@ -1,0 +1,28 @@
+FROM registry.example.com/public/deploy-base:centos7-gcc82
+
+ADD psmisc-22.20-17.el7.x86_64.rpm /tmp/psmisc-22.20-17.el7.x86_64.rpm
+ADD net-tools-2.0-0.25.20131004git.el7.x86_64.rpm /tmp/net-tools-2.0-0.25.20131004git.el7.x86_64.rpm
+ADD coreutils-8.22-18.el7.x86_64.rpm /tmp/coreutils-8.22-18.el7.x86_64.rpm
+ADD gcc-4.8.2.tar.gz /opt/compiler/
+ADD kubectl /bin/kubectl
+
+RUN useradd idl-face -s /sbin/nologin && /bin/cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && yum -y localinstall /tmp/psmisc-22.20-17.el7.x86_64.rpm && yum -y localinstall /tmp/net-tools-2.0-0.25.20131004git.el7.x86_64.rpm && yum -y localinstall /tmp/coreutils-8.22-18.el7.x86_64.rpm && rm -rf /tmp/*.rpm && chmod -R 755 /opt/compiler/gcc* && chmod +x /bin/kubectl
+
+ADD package_cuda-10.2.tar.gz /opt/compiler/
+ADD aise_1.0.29.1 /home/idl-face/aise_1.0.29.1
+ADD relay /home/idl-face/relay
+ADD cctool /home/idl-face/cctool
+ADD aise_start.sh /home/idl-face/aise_1.0.29.1/bin/aise_start.sh
+
+
+ENV LD_LIBRARY_PATH=/data/aicu-tob/big-data/javajars/cuda/lib64
+ENV TZ=Asia/Shanghai
+
+WORKDIR /home/idl-face/aise_1.0.29.1
+
+
+# 编写启动脚本
+CMD /bin/sh /home/idl-face/aise_1.0.29.1/bin/aise_start.sh
+
+
+

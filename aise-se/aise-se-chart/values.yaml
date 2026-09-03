@@ -1,0 +1,174 @@
+image: aise-se
+imageTag: v1.0
+imagePullPolicy: IfNotPresent
+service:
+  annotations: {}
+  type: ClusterIP
+  port: 8808
+serviceport: 8808
+
+# 副本数/实例数  # 副本数建议为偶数，6个实例的分片id分别为0 0 1 1 2 2 
+Replicas: 6
+
+aise_conf:
+  gpu: false
+  device_num: 1
+
+  per_logical_shard_threads: 40
+  sync_interval: 50
+  batch_max_num: 50
+  gpu_filter_batch_min: 10
+  gpu_filter_dot_min: 60
+
+  # 注意：在扩容时，注意与实例数Replicas保持一致
+  num_of_physical_partitions: 3
+  # 下行无需配置，启动脚本会依据statefulset的pod编号作为索引去physical_partition_ids里获取自己的physical_partition_id
+  # physical_partition_id: 0
+
+# 询问客户采用的是生命类别的照片，如果是证件照，那么将compare_id.cfg文件的内容覆盖给/home/idl-face/aise_1.0.29.1/conf/compare.cfg
+# 查看featrue-frame映射文件的命令：kubectl  exec  feature-frame-0 ls "/home/idl-face/aikl-face-package-1.3.5.1/conf/compare/"
+# 查看证件照文件内容的命令：kubectl  exec  feature-frame-0 cat "/home/idl-face/aikl-face-package-1.3.5.1/conf/compare/compare_id.cfg"
+compareCfg: "
+1\n
+6\n
+0 0.544462502003 0.592382729053 0.652112483978 0.726480066776 1\n
+100 90 80 70 60 0\n
+"
+sqlOnlineGconf: 
+  # 读从库即可：slave-service代理多个从库
+  mysql_host: slave-service.default.svc.cluster.local.
+  mysql_username: root
+  mysql_password: 'CHANGE_ME'
+  mysql_dbname: face
+  mysql_port: 5535
+out_depend_msg:
+  relay:
+    #ip: 192.0.2.24
+    ip: relay-service.default.svc.cluster.local.
+    port: 8192
+cronjob:
+  image: aise-se
+  imageTag: v1.0
+  imagePullPolicy: IfNotPresent
+  # 计划任务时间
+  #schedule: "*/10 * * * *"
+  schedule: "*/1 * * * *"
+  # 强烈建议设置错过调度的计算时间
+  startingDeadlineSeconds: 3000
+  # 存放全量数据，需要大一些，视情况调大
+  persistence:
+    # 指定持久存储的类型，可以指定为emptyDir或local-path
+    type: emptyDir
+    # 如果存储类型使用emptyDir，可以设置采用内存，但这只适用于数据量不大或节点内存足够多的情况
+    # 而且若真的使用内存，则最大可用内存大小为下述size值与所有容器内存之和的最小值
+    memory: false
+    size: 100Gi
+    # 下面两行只针对若type为local-path
+    accessMode: ReadWriteOnce
+    storageClass: local-path
+  resources:
+    # cpu配置
+    requests:
+      cpu: 100m
+      memory: 10Gi
+    limits:
+      cpu: 4
+      memory: 100Gi
+args: []
+busybox:
+  enabled: false
+  image: busybox
+  tag: 1.29.3
+extraVolumes: '# - name: extras
+
+  #   emptyDir: {}
+
+  '
+extraVolumeMounts: '# - name: extras
+
+  #   mountPath: /usr/share/extras
+
+  #   readOnly: true
+
+  '
+extraInitContainers: '# - name: do-something
+
+  #   image: busybox
+
+  #   command: [''do'', ''something'']
+
+  '
+nodeSelector: {}
+#tolerations: 
+#  - key: "node.kubernetes.io/unreachable"
+#    operator: "Exists"
+#    effect: "NoExecute"
+#    tolerationSeconds: 1200
+#  - key: "node.kubernetes.io/not-ready"
+#    operator: "Exists"
+#    effect: "NoExecute"
+#    tolerationSeconds: 1200
+#  - key: "node.kubernetes.io/network-unavailable"
+#    operator: "Exists"
+#    effect: "NoExecute"
+#    tolerationSeconds: 1200
+#
+
+
+livenessProbe:
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 5
+  successThreshold: 1
+  failureThreshold: 3
+readinessProbe:
+  initialDelaySeconds: 15
+  periodSeconds: 10
+  timeoutSeconds: 1
+  successThreshold: 1
+  failureThreshold: 3
+persistence:
+  enabled: true
+  size: 10Gi
+  accessMode: ReadWriteOnce
+  storageClass: local-path
+resources:
+  # cpu配置
+  requests:
+    cpu: 100m
+    memory: 1Gi
+  limits:
+    cpu: 4
+    memory: 60Gi
+  # gpu配置: 如果设置gpu: true，那么请注释上面6行cpu配置，打开下面4行注释
+  #requests:
+  #  nvidia.com/gpu: 1
+  #limits:
+  #  nvidia.com/gpu: 1
+#尚未定制
+#metrics:
+#  enabled: false
+#  image: prom/relay-exporter
+#  imageTag: v1.0
+#  imagePullPolicy: IfNotPresent
+#  resources: {}
+#  annotations: {}
+#  livenessProbe:
+#    initialDelaySeconds: 15
+#    timeoutSeconds: 5
+#  readinessProbe:
+#    initialDelaySeconds: 5
+#    timeoutSeconds: 1
+#  flags: []
+#  serviceMonitor:
+#    enabled: false
+#    additionalLabels: {}
+
+deploymentAnnotations: {}
+podAnnotations: {}
+podLabels: {}
+initContainer:
+  resources:
+    requests:
+      memory: 10Mi
+      cpu: 10m
