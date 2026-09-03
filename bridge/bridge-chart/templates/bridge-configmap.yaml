@@ -1,0 +1,69 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "bridge.fullname" . }}-configuration
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ template "bridge.fullname" . }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    heritage: "{{ .Release.Service }}"
+    release: "{{ .Release.Name }}"
+data:
+  bridge_flags.gconf: |
+    --db_ip={{ .Values.databus.ip }}
+    --db_port={{ .Values.databus.port }}
+    --db_user={{ .Values.databus.user }}
+    --db_pass={{ .Values.databus.pass }}
+    --db_db={{ .Values.databus.db }}
+    --processor_name=PublicProcessor
+    --relay_ip={{ .Values.relay.ip }}
+    --relay_port={{ .Values.relay.port }}
+    --filter=face.t_pic_record%
+  
+  bridge_flags.gconf.cjson: |
+    {
+        "databus_ip": {
+            "name": "databus的ip",
+            "desc": "数据库的ip",
+            "type": "string",
+            "options": [
+            ]
+        },
+        "databus_port": {
+            "name": "databus的端口",
+            "desc": "数据库的端口",
+            "type": "int",
+            "options": [
+            ]
+        },
+        "relay_ip": {
+            "name": "relay_master的ip",
+            "desc": "relay_master的ip",
+            "type": "string",
+            "options": [
+            ]
+        },
+        "relay_port": {
+            "name": "relay_master的端口",
+            "desc": "relay_master的端口",
+            "type": "int",
+            "options": [
+            ]
+        }
+    }
+
+  
+  bridge_flags.gconf.ctemplate: |
+    --db_ip=<!databus_ip||$MYSQL_SVC_SERVICE_HOST!>
+    --db_port=<!databus_port||$MYSQL_SVC_SERVICE_PORT!>
+    --db_user=face
+    --db_pass=face
+    --db_db=face
+    --processor_name=PublicProcessor
+    --relay_ip=<!relay_ip||$FACE_SVC_RELAYMASTER_SERVICE_HOST!>
+    --relay_port=<!relay_port||$FACE_SVC_RELAYMASTER_SERVICE_PORT!>
+    --filter=face.t_pic_record%
+
+  alert.conf: |
+    mobile_list=()
+    mail_list=()

@@ -1,0 +1,54 @@
+image: bridge
+imageTag: v1.0
+Replicas: 1
+imagePullPolicy: IfNotPresent
+args: []
+databus:
+  # 读数据库即可
+  ip: slave-service.default.svc.cluster.local.
+  port: 5535
+  user: root
+  pass: 'xxxxxxx'
+  db: face
+  
+  
+relay: # 将结果推送给relay，所以需要配置relay的地址
+  ip: relay-service.default.svc.cluster.local.
+  port: 8192
+busybox:
+  enabled: false
+  image: busybox
+  tag: 1.29.3
+
+
+livenessProbe:
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 5
+  successThreshold: 1
+  failureThreshold: 3
+readinessProbe:
+  initialDelaySeconds: 15
+  periodSeconds: 10
+  timeoutSeconds: 1
+  successThreshold: 1
+  failureThreshold: 3
+persistence:
+  enabled: true
+  size: 1Gi
+  accessMode: ReadWriteOnce
+  storageClass: local-path
+resources:
+  requests:
+    cpu: 100m
+    memory: 1Gi
+  limits:
+    cpu: 4
+    memory: 60Gi
+
+
+initContainer:
+  resources:
+    requests:
+      memory: 10Mi
+      cpu: 10m

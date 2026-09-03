@@ -1,0 +1,18 @@
+FROM registry.example.com/ist/centos:7
+
+ADD coreutils-8.22-18.el7.x86_64.rpm /tmp/coreutils-8.22-18.el7.x86_64.rpm
+ADD psmisc-22.20-17.el7.x86_64.rpm /tmp/psmisc-22.20-17.el7.x86_64.rpm
+ADD public_bridge/ /home/idl-face/public_bridge
+ADD bridge_start.sh /home/idl-face/public_bridge/bin/bridge_start.sh
+ADD mysql /home/idl-face/databus5535/bin/mysql
+
+
+RUN useradd idl-face -s /sbin/nologin && /bin/cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && yum clean all && yum -y localinstall /tmp/psmisc-22.20-17.el7.x86_64.rpm && yum -y localinstall /tmp/coreutils-8.22-18.el7.x86_64.rpm && rm -rf /tmp/*.rpm
+
+
+
+ENV TZ=Asia/Shanghai
+WORKDIR /home/idl-face/public_bridge/ 
+
+CMD /bin/sh /home/idl-face/public_bridge/bin/bridge_start.sh
+
