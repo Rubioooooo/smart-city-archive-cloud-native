@@ -1,0 +1,1758 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "mysql.fullname" . }}-face-init
+  namespace: {{ .Release.Namespace }}
+data:
+  public.sql: |-
+    -- GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY '<REDACTED>' WITH GRANT OPTION;
+    -- flush privileges;
+
+    CREATE DATABASE IF NOT EXISTS face DEFAULT CHARSET utf8 COLLATE utf8_general_ci;
+
+    use face;
+
+    CREATE TABLE IF NOT EXISTS `t_group_record_0` (
+      `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '主键',
+      `appid` varchar(48) NOT NULL COMMENT 'app标识',
+      `groupid` varchar(48) NOT NULL COMMENT 'group标识',
+      `scene_type` varchar(64) NOT NULL DEFAULT 'LIVE' COMMENT '场景标志',
+      `delete_flag` int(11) NOT NULL DEFAULT '0' COMMENT '软删字段',
+      `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      `update_time` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT '更新时间',
+      PRIMARY KEY (`id`),
+      UNIQUE KEY `uni_appid_groupid` (`appid`,`groupid`)
+    ) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8 COMMENT='人脸组信息表';
+
+    create table IF NOT EXISTS `t_group_record_1` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_2` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_3` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_4` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_5` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_6` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_7` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_8` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_9` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_10` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_11` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_12` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_13` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_14` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_15` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_16` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_17` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_18` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_19` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_20` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_21` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_22` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_23` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_24` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_25` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_26` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_27` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_28` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_29` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_30` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_31` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_32` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_33` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_34` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_35` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_36` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_37` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_38` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_39` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_40` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_41` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_42` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_43` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_44` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_45` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_46` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_47` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_48` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_49` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_50` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_51` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_52` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_53` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_54` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_55` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_56` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_57` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_58` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_59` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_60` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_61` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_62` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_63` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_64` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_65` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_66` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_67` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_68` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_69` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_70` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_71` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_72` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_73` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_74` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_75` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_76` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_77` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_78` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_79` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_80` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_81` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_82` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_83` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_84` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_85` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_86` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_87` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_88` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_89` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_90` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_91` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_92` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_93` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_94` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_95` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_96` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_97` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_98` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_group_record_99` like `t_group_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_0` (
+      `id` int NOT NULL AUTO_INCREMENT COMMENT '主键',
+      `appid` varchar(48) NOT NULL COMMENT 'app标识',
+      `groupid` varchar(48) NOT NULL COMMENT 'group标识',
+      `userid` varchar(128) NOT NULL COMMENT '用户标识',
+      `user_info` varchar(256) NOT NULL DEFAULT '' COMMENT '用户信息',
+      `delete_flag` tinyint NOT NULL DEFAULT '0' COMMENT '软删字段',
+      `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY (`id`),
+      UNIQUE `uni_userid_appid_groupid` (`userid`, `appid`, `groupid`),
+      KEY `idx_appid_groupid` (`appid`, `groupid`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='用户信息表';
+
+    create table IF NOT EXISTS `t_user_record_1` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_2` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_3` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_4` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_5` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_6` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_7` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_8` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_9` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_10` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_11` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_12` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_13` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_14` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_15` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_16` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_17` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_18` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_19` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_20` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_21` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_22` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_23` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_24` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_25` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_26` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_27` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_28` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_29` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_30` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_31` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_32` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_33` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_34` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_35` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_36` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_37` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_38` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_39` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_40` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_41` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_42` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_43` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_44` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_45` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_46` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_47` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_48` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_49` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_50` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_51` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_52` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_53` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_54` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_55` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_56` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_57` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_58` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_59` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_60` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_61` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_62` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_63` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_64` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_65` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_66` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_67` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_68` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_69` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_70` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_71` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_72` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_73` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_74` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_75` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_76` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_77` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_78` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_79` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_80` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_81` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_82` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_83` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_84` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_85` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_86` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_87` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_88` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_89` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_90` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_91` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_92` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_93` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_94` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_95` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_96` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_97` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_98` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_user_record_99` like `t_user_record_0`;
+
+    create table IF NOT EXISTS `t_face_record_0` (
+         `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键',
+         `faceid` varchar(64) NOT NULL DEFAULT '',
+         `imageid` varchar(128) NOT NULL DEFAULT '',
+         `detect` text NOT NULL DEFAULT '',
+         `feature_live` varchar(1024) NOT NULL DEFAULT '',
+         `feature_card` varchar(4096) NOT NULL DEFAULT '',
+         `attr` varchar(1024) NOT NULL DEFAULT '',
+         `quality` varchar(1024) NOT NULL DEFAULT '',
+         `liveness` varchar(256) NOT NULL DEFAULT '',
+         `other` varchar(2048) NOT NULL DEFAULT '',
+         `version` varchar(64) NOT NULL,
+         `create_time` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+         `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '自动更新时间',
+         PRIMARY KEY (`id`),
+         UNIQUE `uni_faceid` (`faceid`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='人脸信息表';
+
+    create table `t_face_record_1` like `t_face_record_0`;
+
+    create table `t_face_record_2` like `t_face_record_0`;
+
+    create table `t_face_record_3` like `t_face_record_0`;
+
+    create table `t_face_record_4` like `t_face_record_0`;
+
+    create table `t_face_record_5` like `t_face_record_0`;
+
+    create table `t_face_record_6` like `t_face_record_0`;
+
+    create table `t_face_record_7` like `t_face_record_0`;
+
+    create table `t_face_record_8` like `t_face_record_0`;
+
+    create table `t_face_record_9` like `t_face_record_0`;
+
+    create table `t_face_record_10` like `t_face_record_0`;
+
+    create table `t_face_record_11` like `t_face_record_0`;
+
+    create table `t_face_record_12` like `t_face_record_0`;
+
+    create table `t_face_record_13` like `t_face_record_0`;
+
+    create table `t_face_record_14` like `t_face_record_0`;
+
+    create table `t_face_record_15` like `t_face_record_0`;
+
+    create table `t_face_record_16` like `t_face_record_0`;
+
+    create table `t_face_record_17` like `t_face_record_0`;
+
+    create table `t_face_record_18` like `t_face_record_0`;
+
+    create table `t_face_record_19` like `t_face_record_0`;
+
+    create table `t_face_record_20` like `t_face_record_0`;
+
+    create table `t_face_record_21` like `t_face_record_0`;
+
+    create table `t_face_record_22` like `t_face_record_0`;
+
+    create table `t_face_record_23` like `t_face_record_0`;
+
+    create table `t_face_record_24` like `t_face_record_0`;
+
+    create table `t_face_record_25` like `t_face_record_0`;
+
+    create table `t_face_record_26` like `t_face_record_0`;
+
+    create table `t_face_record_27` like `t_face_record_0`;
+
+    create table `t_face_record_28` like `t_face_record_0`;
+
+    create table `t_face_record_29` like `t_face_record_0`;
+
+    create table `t_face_record_30` like `t_face_record_0`;
+
+    create table `t_face_record_31` like `t_face_record_0`;
+
+    create table `t_face_record_32` like `t_face_record_0`;
+
+    create table `t_face_record_33` like `t_face_record_0`;
+
+    create table `t_face_record_34` like `t_face_record_0`;
+
+    create table `t_face_record_35` like `t_face_record_0`;
+
+    create table `t_face_record_36` like `t_face_record_0`;
+
+    create table `t_face_record_37` like `t_face_record_0`;
+
+    create table `t_face_record_38` like `t_face_record_0`;
+
+    create table `t_face_record_39` like `t_face_record_0`;
+
+    create table `t_face_record_40` like `t_face_record_0`;
+
+    create table `t_face_record_41` like `t_face_record_0`;
+
+    create table `t_face_record_42` like `t_face_record_0`;
+
+    create table `t_face_record_43` like `t_face_record_0`;
+
+    create table `t_face_record_44` like `t_face_record_0`;
+
+    create table `t_face_record_45` like `t_face_record_0`;
+
+    create table `t_face_record_46` like `t_face_record_0`;
+
+    create table `t_face_record_47` like `t_face_record_0`;
+
+    create table `t_face_record_48` like `t_face_record_0`;
+
+    create table `t_face_record_49` like `t_face_record_0`;
+
+    create table `t_face_record_50` like `t_face_record_0`;
+
+    create table `t_face_record_51` like `t_face_record_0`;
+
+    create table `t_face_record_52` like `t_face_record_0`;
+
+    create table `t_face_record_53` like `t_face_record_0`;
+
+    create table `t_face_record_54` like `t_face_record_0`;
+
+    create table `t_face_record_55` like `t_face_record_0`;
+
+    create table `t_face_record_56` like `t_face_record_0`;
+
+    create table `t_face_record_57` like `t_face_record_0`;
+
+    create table `t_face_record_58` like `t_face_record_0`;
+
+    create table `t_face_record_59` like `t_face_record_0`;
+
+    create table `t_face_record_60` like `t_face_record_0`;
+
+    create table `t_face_record_61` like `t_face_record_0`;
+
+    create table `t_face_record_62` like `t_face_record_0`;
+
+    create table `t_face_record_63` like `t_face_record_0`;
+
+    create table `t_face_record_64` like `t_face_record_0`;
+
+    create table `t_face_record_65` like `t_face_record_0`;
+
+    create table `t_face_record_66` like `t_face_record_0`;
+
+    create table `t_face_record_67` like `t_face_record_0`;
+
+    create table `t_face_record_68` like `t_face_record_0`;
+
+    create table `t_face_record_69` like `t_face_record_0`;
+
+    create table `t_face_record_70` like `t_face_record_0`;
+
+    create table `t_face_record_71` like `t_face_record_0`;
+
+    create table `t_face_record_72` like `t_face_record_0`;
+
+    create table `t_face_record_73` like `t_face_record_0`;
+
+    create table `t_face_record_74` like `t_face_record_0`;
+
+    create table `t_face_record_75` like `t_face_record_0`;
+
+    create table `t_face_record_76` like `t_face_record_0`;
+
+    create table `t_face_record_77` like `t_face_record_0`;
+
+    create table `t_face_record_78` like `t_face_record_0`;
+
+    create table `t_face_record_79` like `t_face_record_0`;
+
+    create table `t_face_record_80` like `t_face_record_0`;
+
+    create table `t_face_record_81` like `t_face_record_0`;
+
+    create table `t_face_record_82` like `t_face_record_0`;
+
+    create table `t_face_record_83` like `t_face_record_0`;
+
+    create table `t_face_record_84` like `t_face_record_0`;
+
+    create table `t_face_record_85` like `t_face_record_0`;
+
+    create table `t_face_record_86` like `t_face_record_0`;
+
+    create table `t_face_record_87` like `t_face_record_0`;
+
+    create table `t_face_record_88` like `t_face_record_0`;
+
+    create table `t_face_record_89` like `t_face_record_0`;
+
+    create table `t_face_record_90` like `t_face_record_0`;
+
+    create table `t_face_record_91` like `t_face_record_0`;
+
+    create table `t_face_record_92` like `t_face_record_0`;
+
+    create table `t_face_record_93` like `t_face_record_0`;
+
+    create table `t_face_record_94` like `t_face_record_0`;
+
+    create table `t_face_record_95` like `t_face_record_0`;
+
+    create table `t_face_record_96` like `t_face_record_0`;
+
+    create table `t_face_record_97` like `t_face_record_0`;
+
+    create table `t_face_record_98` like `t_face_record_0`;
+
+    create table `t_face_record_99` like `t_face_record_0`;
+
+    create table IF NOT EXISTS `t_task_record` (
+          `id` int NOT NULL AUTO_INCREMENT COMMENT '主键',
+          `appid` varchar(48) NOT NULL COMMENT 'app标识',
+          `groupid` varchar(48) NOT NULL COMMENT 'group标识',
+          `info`    varchar(1024) NOT NULL COMMENT '任务信息',
+          `status` int(11) NOT NULL DEFAULT '0' COMMENT '状态',
+          `create_time` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+          `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '自动更新时间',
+          PRIMARY KEY (`id`),
+          KEY `idx_appid_groupid` (`appid`, `groupid`),
+          KEY `idx_status` (`status`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='任务信息表';
+  face0.sql: |-
+    use face;
+
+    CREATE TABLE IF NOT EXISTS `t_pic_record_0` (
+       `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键',
+       `appid` varchar(48) NOT NULL DEFAULT 'local' COMMENT 'app标识',
+       `groupid` varchar(48) NOT NULL DEFAULT 'test' COMMENT '照片类型',
+       `userid` varchar(128) NOT NULL DEFAULT '' COMMENT '用户id',
+       `user_info` varchar(256) NOT NULL DEFAULT '' COMMENT '用户信息',
+       `imageid` varchar(128) NOT NULL DEFAULT '' COMMENT '图片pic_id',
+       `faceid` varchar(128) NOT NULL DEFAULT '',
+       `feature` varchar(4096) NOT NULL,
+       `index_json` varchar(4096) NOT NULL DEFAULT '',
+       `status` tinyint(4) NOT NULL DEFAULT '0' COMMENT '标记状态',
+       `delete_flag` int(11) NOT NULL DEFAULT '0' COMMENT '软删字段',
+       `create_time` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+       `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '自动更新时间',
+       PRIMARY KEY (`id`),
+       KEY `faceid_index` (`faceid`),
+       KEY `user_shz_index` (`appid`,`groupid`,`userid`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='信息记录表';
+
+    create table `t_pic_record_1` like `t_pic_record_0`;
+
+    create table `t_pic_record_2` like `t_pic_record_0`;
+
+    create table `t_pic_record_3` like `t_pic_record_0`;
+
+    create table `t_pic_record_4` like `t_pic_record_0`;
+
+    create table `t_pic_record_5` like `t_pic_record_0`;
+
+    create table `t_pic_record_6` like `t_pic_record_0`;
+
+    create table `t_pic_record_7` like `t_pic_record_0`;
+
+    create table `t_pic_record_8` like `t_pic_record_0`;
+
+    create table `t_pic_record_9` like `t_pic_record_0`;
+
+    create table `t_pic_record_10` like `t_pic_record_0`;
+
+    create table `t_pic_record_11` like `t_pic_record_0`;
+
+    create table `t_pic_record_12` like `t_pic_record_0`;
+
+    create table `t_pic_record_13` like `t_pic_record_0`;
+
+    create table `t_pic_record_14` like `t_pic_record_0`;
+
+    create table `t_pic_record_15` like `t_pic_record_0`;
+
+    create table `t_pic_record_16` like `t_pic_record_0`;
+
+    create table `t_pic_record_17` like `t_pic_record_0`;
+
+    create table `t_pic_record_18` like `t_pic_record_0`;
+
+    create table `t_pic_record_19` like `t_pic_record_0`;
+
+    create table `t_pic_record_20` like `t_pic_record_0`;
+
+    create table `t_pic_record_21` like `t_pic_record_0`;
+
+    create table `t_pic_record_22` like `t_pic_record_0`;
+
+    create table `t_pic_record_23` like `t_pic_record_0`;
+
+    create table `t_pic_record_24` like `t_pic_record_0`;
+
+    create table `t_pic_record_25` like `t_pic_record_0`;
+
+    create table `t_pic_record_26` like `t_pic_record_0`;
+
+    create table `t_pic_record_27` like `t_pic_record_0`;
+
+    create table `t_pic_record_28` like `t_pic_record_0`;
+
+    create table `t_pic_record_29` like `t_pic_record_0`;
+
+    create table `t_pic_record_30` like `t_pic_record_0`;
+
+    create table `t_pic_record_31` like `t_pic_record_0`;
+
+    create table `t_pic_record_32` like `t_pic_record_0`;
+
+    create table `t_pic_record_33` like `t_pic_record_0`;
+
+    create table `t_pic_record_34` like `t_pic_record_0`;
+
+    create table `t_pic_record_35` like `t_pic_record_0`;
+
+    create table `t_pic_record_36` like `t_pic_record_0`;
+
+    create table `t_pic_record_37` like `t_pic_record_0`;
+
+    create table `t_pic_record_38` like `t_pic_record_0`;
+
+    create table `t_pic_record_39` like `t_pic_record_0`;
+
+    create table `t_pic_record_40` like `t_pic_record_0`;
+
+    create table `t_pic_record_41` like `t_pic_record_0`;
+
+    create table `t_pic_record_42` like `t_pic_record_0`;
+
+    create table `t_pic_record_43` like `t_pic_record_0`;
+
+    create table `t_pic_record_44` like `t_pic_record_0`;
+
+    create table `t_pic_record_45` like `t_pic_record_0`;
+
+    create table `t_pic_record_46` like `t_pic_record_0`;
+
+    create table `t_pic_record_47` like `t_pic_record_0`;
+
+    create table `t_pic_record_48` like `t_pic_record_0`;
+
+    create table `t_pic_record_49` like `t_pic_record_0`;
+
+    create table `t_pic_record_50` like `t_pic_record_0`;
+
+    create table `t_pic_record_51` like `t_pic_record_0`;
+
+    create table `t_pic_record_52` like `t_pic_record_0`;
+
+    create table `t_pic_record_53` like `t_pic_record_0`;
+
+    create table `t_pic_record_54` like `t_pic_record_0`;
+
+    create table `t_pic_record_55` like `t_pic_record_0`;
+
+    create table `t_pic_record_56` like `t_pic_record_0`;
+
+    create table `t_pic_record_57` like `t_pic_record_0`;
+
+    create table `t_pic_record_58` like `t_pic_record_0`;
+
+    create table `t_pic_record_59` like `t_pic_record_0`;
+
+    create table `t_pic_record_60` like `t_pic_record_0`;
+
+    create table `t_pic_record_61` like `t_pic_record_0`;
+
+    create table `t_pic_record_62` like `t_pic_record_0`;
+
+    create table `t_pic_record_63` like `t_pic_record_0`;
+
+    create table `t_pic_record_64` like `t_pic_record_0`;
+
+    create table `t_pic_record_65` like `t_pic_record_0`;
+
+    create table `t_pic_record_66` like `t_pic_record_0`;
+
+    create table `t_pic_record_67` like `t_pic_record_0`;
+
+    create table `t_pic_record_68` like `t_pic_record_0`;
+
+    create table `t_pic_record_69` like `t_pic_record_0`;
+
+    create table `t_pic_record_70` like `t_pic_record_0`;
+
+    create table `t_pic_record_71` like `t_pic_record_0`;
+
+    create table `t_pic_record_72` like `t_pic_record_0`;
+
+    create table `t_pic_record_73` like `t_pic_record_0`;
+
+    create table `t_pic_record_74` like `t_pic_record_0`;
+
+    create table `t_pic_record_75` like `t_pic_record_0`;
+
+    create table `t_pic_record_76` like `t_pic_record_0`;
+
+    create table `t_pic_record_77` like `t_pic_record_0`;
+
+    create table `t_pic_record_78` like `t_pic_record_0`;
+
+    create table `t_pic_record_79` like `t_pic_record_0`;
+
+    create table `t_pic_record_80` like `t_pic_record_0`;
+
+    create table `t_pic_record_81` like `t_pic_record_0`;
+
+    create table `t_pic_record_82` like `t_pic_record_0`;
+
+    create table `t_pic_record_83` like `t_pic_record_0`;
+
+    create table `t_pic_record_84` like `t_pic_record_0`;
+
+    create table `t_pic_record_85` like `t_pic_record_0`;
+
+    create table `t_pic_record_86` like `t_pic_record_0`;
+
+    create table `t_pic_record_87` like `t_pic_record_0`;
+
+    create table `t_pic_record_88` like `t_pic_record_0`;
+
+    create table `t_pic_record_89` like `t_pic_record_0`;
+
+    create table `t_pic_record_90` like `t_pic_record_0`;
+
+    create table `t_pic_record_91` like `t_pic_record_0`;
+
+    create table `t_pic_record_92` like `t_pic_record_0`;
+
+    create table `t_pic_record_93` like `t_pic_record_0`;
+
+    create table `t_pic_record_94` like `t_pic_record_0`;
+
+    create table `t_pic_record_95` like `t_pic_record_0`;
+
+    create table `t_pic_record_96` like `t_pic_record_0`;
+
+    create table `t_pic_record_97` like `t_pic_record_0`;
+
+    create table `t_pic_record_98` like `t_pic_record_0`;
+
+    create table `t_pic_record_99` like `t_pic_record_0`;
+  face1.sql: |-
+    use face;
+
+    CREATE TABLE IF NOT EXISTS `t_pic_record_100` (
+       `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键',
+       `appid` varchar(48) NOT NULL DEFAULT 'local' COMMENT 'app标识',
+       `groupid` varchar(48) NOT NULL DEFAULT 'test' COMMENT '照片类型',
+       `userid` varchar(128) NOT NULL DEFAULT '' COMMENT '用户id',
+       `user_info` varchar(256) NOT NULL DEFAULT '' COMMENT '用户信息',
+       `imageid` varchar(128) NOT NULL DEFAULT '' COMMENT '图片pic_id',
+       `faceid` varchar(128) NOT NULL DEFAULT '',
+       `feature` varchar(4096) NOT NULL,
+       `index_json` varchar(4096) NOT NULL DEFAULT '',
+       `status` tinyint(4) NOT NULL DEFAULT '0' COMMENT '标记状态',
+       `delete_flag` int(11) NOT NULL DEFAULT '0' COMMENT '软删字段',
+       `create_time` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+       `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '自动更新时间',
+       PRIMARY KEY (`id`),
+       KEY `faceid_index` (`faceid`),
+       KEY `user_shz_index` (`appid`,`groupid`,`userid`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='信息记录表';
+
+    create table `t_pic_record_101` like `t_pic_record_100`;
+
+    create table `t_pic_record_102` like `t_pic_record_100`;
+
+    create table `t_pic_record_103` like `t_pic_record_100`;
+
+    create table `t_pic_record_104` like `t_pic_record_100`;
+
+    create table `t_pic_record_105` like `t_pic_record_100`;
+
+    create table `t_pic_record_106` like `t_pic_record_100`;
+
+    create table `t_pic_record_107` like `t_pic_record_100`;
+
+    create table `t_pic_record_108` like `t_pic_record_100`;
+
+    create table `t_pic_record_109` like `t_pic_record_100`;
+
+    create table `t_pic_record_110` like `t_pic_record_100`;
+
+    create table `t_pic_record_111` like `t_pic_record_100`;
+
+    create table `t_pic_record_112` like `t_pic_record_100`;
+
+    create table `t_pic_record_113` like `t_pic_record_100`;
+
+    create table `t_pic_record_114` like `t_pic_record_100`;
+
+    create table `t_pic_record_115` like `t_pic_record_100`;
+
+    create table `t_pic_record_116` like `t_pic_record_100`;
+
+    create table `t_pic_record_117` like `t_pic_record_100`;
+
+    create table `t_pic_record_118` like `t_pic_record_100`;
+
+    create table `t_pic_record_119` like `t_pic_record_100`;
+
+    create table `t_pic_record_120` like `t_pic_record_100`;
+
+    create table `t_pic_record_121` like `t_pic_record_100`;
+
+    create table `t_pic_record_122` like `t_pic_record_100`;
+
+    create table `t_pic_record_123` like `t_pic_record_100`;
+
+    create table `t_pic_record_124` like `t_pic_record_100`;
+
+    create table `t_pic_record_125` like `t_pic_record_100`;
+
+    create table `t_pic_record_126` like `t_pic_record_100`;
+
+    create table `t_pic_record_127` like `t_pic_record_100`;
+
+    create table `t_pic_record_128` like `t_pic_record_100`;
+
+    create table `t_pic_record_129` like `t_pic_record_100`;
+
+    create table `t_pic_record_130` like `t_pic_record_100`;
+
+    create table `t_pic_record_131` like `t_pic_record_100`;
+
+    create table `t_pic_record_132` like `t_pic_record_100`;
+
+    create table `t_pic_record_133` like `t_pic_record_100`;
+
+    create table `t_pic_record_134` like `t_pic_record_100`;
+
+    create table `t_pic_record_135` like `t_pic_record_100`;
+
+    create table `t_pic_record_136` like `t_pic_record_100`;
+
+    create table `t_pic_record_137` like `t_pic_record_100`;
+
+    create table `t_pic_record_138` like `t_pic_record_100`;
+
+    create table `t_pic_record_139` like `t_pic_record_100`;
+
+    create table `t_pic_record_140` like `t_pic_record_100`;
+
+    create table `t_pic_record_141` like `t_pic_record_100`;
+
+    create table `t_pic_record_142` like `t_pic_record_100`;
+
+    create table `t_pic_record_143` like `t_pic_record_100`;
+
+    create table `t_pic_record_144` like `t_pic_record_100`;
+
+    create table `t_pic_record_145` like `t_pic_record_100`;
+
+    create table `t_pic_record_146` like `t_pic_record_100`;
+
+    create table `t_pic_record_147` like `t_pic_record_100`;
+
+    create table `t_pic_record_148` like `t_pic_record_100`;
+
+    create table `t_pic_record_149` like `t_pic_record_100`;
+
+    create table `t_pic_record_150` like `t_pic_record_100`;
+
+    create table `t_pic_record_151` like `t_pic_record_100`;
+
+    create table `t_pic_record_152` like `t_pic_record_100`;
+
+    create table `t_pic_record_153` like `t_pic_record_100`;
+
+    create table `t_pic_record_154` like `t_pic_record_100`;
+
+    create table `t_pic_record_155` like `t_pic_record_100`;
+
+    create table `t_pic_record_156` like `t_pic_record_100`;
+
+    create table `t_pic_record_157` like `t_pic_record_100`;
+
+    create table `t_pic_record_158` like `t_pic_record_100`;
+
+    create table `t_pic_record_159` like `t_pic_record_100`;
+
+    create table `t_pic_record_160` like `t_pic_record_100`;
+
+    create table `t_pic_record_161` like `t_pic_record_100`;
+
+    create table `t_pic_record_162` like `t_pic_record_100`;
+
+    create table `t_pic_record_163` like `t_pic_record_100`;
+
+    create table `t_pic_record_164` like `t_pic_record_100`;
+
+    create table `t_pic_record_165` like `t_pic_record_100`;
+
+    create table `t_pic_record_166` like `t_pic_record_100`;
+
+    create table `t_pic_record_167` like `t_pic_record_100`;
+
+    create table `t_pic_record_168` like `t_pic_record_100`;
+
+    create table `t_pic_record_169` like `t_pic_record_100`;
+
+    create table `t_pic_record_170` like `t_pic_record_100`;
+
+    create table `t_pic_record_171` like `t_pic_record_100`;
+
+    create table `t_pic_record_172` like `t_pic_record_100`;
+
+    create table `t_pic_record_173` like `t_pic_record_100`;
+
+    create table `t_pic_record_174` like `t_pic_record_100`;
+
+    create table `t_pic_record_175` like `t_pic_record_100`;
+
+    create table `t_pic_record_176` like `t_pic_record_100`;
+
+    create table `t_pic_record_177` like `t_pic_record_100`;
+
+    create table `t_pic_record_178` like `t_pic_record_100`;
+
+    create table `t_pic_record_179` like `t_pic_record_100`;
+
+    create table `t_pic_record_180` like `t_pic_record_100`;
+
+    create table `t_pic_record_181` like `t_pic_record_100`;
+
+    create table `t_pic_record_182` like `t_pic_record_100`;
+
+    create table `t_pic_record_183` like `t_pic_record_100`;
+
+    create table `t_pic_record_184` like `t_pic_record_100`;
+
+    create table `t_pic_record_185` like `t_pic_record_100`;
+
+    create table `t_pic_record_186` like `t_pic_record_100`;
+
+    create table `t_pic_record_187` like `t_pic_record_100`;
+
+    create table `t_pic_record_188` like `t_pic_record_100`;
+
+    create table `t_pic_record_189` like `t_pic_record_100`;
+
+    create table `t_pic_record_190` like `t_pic_record_100`;
+
+    create table `t_pic_record_191` like `t_pic_record_100`;
+
+    create table `t_pic_record_192` like `t_pic_record_100`;
+
+    create table `t_pic_record_193` like `t_pic_record_100`;
+
+    create table `t_pic_record_194` like `t_pic_record_100`;
+
+    create table `t_pic_record_195` like `t_pic_record_100`;
+
+    create table `t_pic_record_196` like `t_pic_record_100`;
+
+    create table `t_pic_record_197` like `t_pic_record_100`;
+
+    create table `t_pic_record_198` like `t_pic_record_100`;
+
+    create table `t_pic_record_199` like `t_pic_record_100`;
+  face2.sql: |-
+    use face;
+
+    CREATE TABLE IF NOT EXISTS `t_pic_record_200` (
+       `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键',
+       `appid` varchar(48) NOT NULL DEFAULT 'local' COMMENT 'app标识',
+       `groupid` varchar(48) NOT NULL DEFAULT 'test' COMMENT '照片类型',
+       `userid` varchar(128) NOT NULL DEFAULT '' COMMENT '用户id',
+       `user_info` varchar(256) NOT NULL DEFAULT '' COMMENT '用户信息',
+       `imageid` varchar(128) NOT NULL DEFAULT '' COMMENT '图片pic_id',
+       `faceid` varchar(128) NOT NULL DEFAULT '',
+       `feature` varchar(4096) NOT NULL,
+       `index_json` varchar(4096) NOT NULL DEFAULT '',
+       `status` tinyint(4) NOT NULL DEFAULT '0' COMMENT '标记状态',
+       `delete_flag` int(11) NOT NULL DEFAULT '0' COMMENT '软删字段',
+       `create_time` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+       `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '自动更新时间',
+       PRIMARY KEY (`id`),
+       KEY `faceid_index` (`faceid`),
+       KEY `user_shz_index` (`appid`,`groupid`,`userid`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='信息记录表';
+
+    create table `t_pic_record_201` like `t_pic_record_200`;
+
+    create table `t_pic_record_202` like `t_pic_record_200`;
+
+    create table `t_pic_record_203` like `t_pic_record_200`;
+
+    create table `t_pic_record_204` like `t_pic_record_200`;
+
+    create table `t_pic_record_205` like `t_pic_record_200`;
+
+    create table `t_pic_record_206` like `t_pic_record_200`;
+
+    create table `t_pic_record_207` like `t_pic_record_200`;
+
+    create table `t_pic_record_208` like `t_pic_record_200`;
+
+    create table `t_pic_record_209` like `t_pic_record_200`;
+
+    create table `t_pic_record_210` like `t_pic_record_200`;
+
+    create table `t_pic_record_211` like `t_pic_record_200`;
+
+    create table `t_pic_record_212` like `t_pic_record_200`;
+
+    create table `t_pic_record_213` like `t_pic_record_200`;
+
+    create table `t_pic_record_214` like `t_pic_record_200`;
+
+    create table `t_pic_record_215` like `t_pic_record_200`;
+
+    create table `t_pic_record_216` like `t_pic_record_200`;
+
+    create table `t_pic_record_217` like `t_pic_record_200`;
+
+    create table `t_pic_record_218` like `t_pic_record_200`;
+
+    create table `t_pic_record_219` like `t_pic_record_200`;
+
+    create table `t_pic_record_220` like `t_pic_record_200`;
+
+    create table `t_pic_record_221` like `t_pic_record_200`;
+
+    create table `t_pic_record_222` like `t_pic_record_200`;
+
+    create table `t_pic_record_223` like `t_pic_record_200`;
+
+    create table `t_pic_record_224` like `t_pic_record_200`;
+
+    create table `t_pic_record_225` like `t_pic_record_200`;
+
+    create table `t_pic_record_226` like `t_pic_record_200`;
+
+    create table `t_pic_record_227` like `t_pic_record_200`;
+
+    create table `t_pic_record_228` like `t_pic_record_200`;
+
+    create table `t_pic_record_229` like `t_pic_record_200`;
+
+    create table `t_pic_record_230` like `t_pic_record_200`;
+
+    create table `t_pic_record_231` like `t_pic_record_200`;
+
+    create table `t_pic_record_232` like `t_pic_record_200`;
+
+    create table `t_pic_record_233` like `t_pic_record_200`;
+
+    create table `t_pic_record_234` like `t_pic_record_200`;
+
+    create table `t_pic_record_235` like `t_pic_record_200`;
+
+    create table `t_pic_record_236` like `t_pic_record_200`;
+
+    create table `t_pic_record_237` like `t_pic_record_200`;
+
+    create table `t_pic_record_238` like `t_pic_record_200`;
+
+    create table `t_pic_record_239` like `t_pic_record_200`;
+
+    create table `t_pic_record_240` like `t_pic_record_200`;
+
+    create table `t_pic_record_241` like `t_pic_record_200`;
+
+    create table `t_pic_record_242` like `t_pic_record_200`;
+
+    create table `t_pic_record_243` like `t_pic_record_200`;
+
+    create table `t_pic_record_244` like `t_pic_record_200`;
+
+    create table `t_pic_record_245` like `t_pic_record_200`;
+
+    create table `t_pic_record_246` like `t_pic_record_200`;
+
+    create table `t_pic_record_247` like `t_pic_record_200`;
+
+    create table `t_pic_record_248` like `t_pic_record_200`;
+
+    create table `t_pic_record_249` like `t_pic_record_200`;
+
+    create table `t_pic_record_250` like `t_pic_record_200`;
+
+    create table `t_pic_record_251` like `t_pic_record_200`;
+
+    create table `t_pic_record_252` like `t_pic_record_200`;
+
+    create table `t_pic_record_253` like `t_pic_record_200`;
+
+    create table `t_pic_record_254` like `t_pic_record_200`;
+
+    create table `t_pic_record_255` like `t_pic_record_200`;
+
+    create table `t_pic_record_256` like `t_pic_record_200`;
+
+    create table `t_pic_record_257` like `t_pic_record_200`;
+
+    create table `t_pic_record_258` like `t_pic_record_200`;
+
+    create table `t_pic_record_259` like `t_pic_record_200`;
+
+    create table `t_pic_record_260` like `t_pic_record_200`;
+
+    create table `t_pic_record_261` like `t_pic_record_200`;
+
+    create table `t_pic_record_262` like `t_pic_record_200`;
+
+    create table `t_pic_record_263` like `t_pic_record_200`;
+
+    create table `t_pic_record_264` like `t_pic_record_200`;
+
+    create table `t_pic_record_265` like `t_pic_record_200`;
+
+    create table `t_pic_record_266` like `t_pic_record_200`;
+
+    create table `t_pic_record_267` like `t_pic_record_200`;
+
+    create table `t_pic_record_268` like `t_pic_record_200`;
+
+    create table `t_pic_record_269` like `t_pic_record_200`;
+
+    create table `t_pic_record_270` like `t_pic_record_200`;
+
+    create table `t_pic_record_271` like `t_pic_record_200`;
+
+    create table `t_pic_record_272` like `t_pic_record_200`;
+
+    create table `t_pic_record_273` like `t_pic_record_200`;
+
+    create table `t_pic_record_274` like `t_pic_record_200`;
+
+    create table `t_pic_record_275` like `t_pic_record_200`;
+
+    create table `t_pic_record_276` like `t_pic_record_200`;
+
+    create table `t_pic_record_277` like `t_pic_record_200`;
+
+    create table `t_pic_record_278` like `t_pic_record_200`;
+
+    create table `t_pic_record_279` like `t_pic_record_200`;
+
+    create table `t_pic_record_280` like `t_pic_record_200`;
+
+    create table `t_pic_record_281` like `t_pic_record_200`;
+
+    create table `t_pic_record_282` like `t_pic_record_200`;
+
+    create table `t_pic_record_283` like `t_pic_record_200`;
+
+    create table `t_pic_record_284` like `t_pic_record_200`;
+
+    create table `t_pic_record_285` like `t_pic_record_200`;
+
+    create table `t_pic_record_286` like `t_pic_record_200`;
+
+    create table `t_pic_record_287` like `t_pic_record_200`;
+
+    create table `t_pic_record_288` like `t_pic_record_200`;
+
+    create table `t_pic_record_289` like `t_pic_record_200`;
+
+    create table `t_pic_record_290` like `t_pic_record_200`;
+
+    create table `t_pic_record_291` like `t_pic_record_200`;
+
+    create table `t_pic_record_292` like `t_pic_record_200`;
+
+    create table `t_pic_record_293` like `t_pic_record_200`;
+
+    create table `t_pic_record_294` like `t_pic_record_200`;
+
+    create table `t_pic_record_295` like `t_pic_record_200`;
+
+    create table `t_pic_record_296` like `t_pic_record_200`;
+
+    create table `t_pic_record_297` like `t_pic_record_200`;
+
+    create table `t_pic_record_298` like `t_pic_record_200`;
+
+    create table `t_pic_record_299` like `t_pic_record_200`;
+  face3.sql: |-
+    use face;
+
+    CREATE TABLE IF NOT EXISTS `t_pic_record_300` (
+       `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键',
+       `appid` varchar(48) NOT NULL DEFAULT 'local' COMMENT 'app标识',
+       `groupid` varchar(48) NOT NULL DEFAULT 'test' COMMENT '照片类型',
+       `userid` varchar(128) NOT NULL DEFAULT '' COMMENT '用户id',
+       `user_info` varchar(256) NOT NULL DEFAULT '' COMMENT '用户信息',
+       `imageid` varchar(128) NOT NULL DEFAULT '' COMMENT '图片pic_id',
+       `faceid` varchar(128) NOT NULL DEFAULT '',
+       `feature` varchar(4096) NOT NULL,
+       `index_json` varchar(4096) NOT NULL DEFAULT '',
+       `status` tinyint(4) NOT NULL DEFAULT '0' COMMENT '标记状态',
+       `delete_flag` int(11) NOT NULL DEFAULT '0' COMMENT '软删字段',
+       `create_time` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+       `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '自动更新时间',
+       PRIMARY KEY (`id`),
+       KEY `faceid_index` (`faceid`),
+       KEY `user_shz_index` (`appid`,`groupid`,`userid`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='信息记录表';
+
+    create table `t_pic_record_301` like `t_pic_record_300`;
+
+    create table `t_pic_record_302` like `t_pic_record_300`;
+
+    create table `t_pic_record_303` like `t_pic_record_300`;
+
+    create table `t_pic_record_304` like `t_pic_record_300`;
+
+    create table `t_pic_record_305` like `t_pic_record_300`;
+
+    create table `t_pic_record_306` like `t_pic_record_300`;
+
+    create table `t_pic_record_307` like `t_pic_record_300`;
+
+    create table `t_pic_record_308` like `t_pic_record_300`;
+
+    create table `t_pic_record_309` like `t_pic_record_300`;
+
+    create table `t_pic_record_310` like `t_pic_record_300`;
+
+    create table `t_pic_record_311` like `t_pic_record_300`;
+
+    create table `t_pic_record_312` like `t_pic_record_300`;
+
+    create table `t_pic_record_313` like `t_pic_record_300`;
+
+    create table `t_pic_record_314` like `t_pic_record_300`;
+
+    create table `t_pic_record_315` like `t_pic_record_300`;
+
+    create table `t_pic_record_316` like `t_pic_record_300`;
+
+    create table `t_pic_record_317` like `t_pic_record_300`;
+
+    create table `t_pic_record_318` like `t_pic_record_300`;
+
+    create table `t_pic_record_319` like `t_pic_record_300`;
+
+    create table `t_pic_record_320` like `t_pic_record_300`;
+
+    create table `t_pic_record_321` like `t_pic_record_300`;
+
+    create table `t_pic_record_322` like `t_pic_record_300`;
+
+    create table `t_pic_record_323` like `t_pic_record_300`;
+
+    create table `t_pic_record_324` like `t_pic_record_300`;
+
+    create table `t_pic_record_325` like `t_pic_record_300`;
+
+    create table `t_pic_record_326` like `t_pic_record_300`;
+
+    create table `t_pic_record_327` like `t_pic_record_300`;
+
+    create table `t_pic_record_328` like `t_pic_record_300`;
+
+    create table `t_pic_record_329` like `t_pic_record_300`;
+
+    create table `t_pic_record_330` like `t_pic_record_300`;
+
+    create table `t_pic_record_331` like `t_pic_record_300`;
+
+    create table `t_pic_record_332` like `t_pic_record_300`;
+
+    create table `t_pic_record_333` like `t_pic_record_300`;
+
+    create table `t_pic_record_334` like `t_pic_record_300`;
+
+    create table `t_pic_record_335` like `t_pic_record_300`;
+
+    create table `t_pic_record_336` like `t_pic_record_300`;
+
+    create table `t_pic_record_337` like `t_pic_record_300`;
+
+    create table `t_pic_record_338` like `t_pic_record_300`;
+
+    create table `t_pic_record_339` like `t_pic_record_300`;
+
+    create table `t_pic_record_340` like `t_pic_record_300`;
+
+    create table `t_pic_record_341` like `t_pic_record_300`;
+
+    create table `t_pic_record_342` like `t_pic_record_300`;
+
+    create table `t_pic_record_343` like `t_pic_record_300`;
+
+    create table `t_pic_record_344` like `t_pic_record_300`;
+
+    create table `t_pic_record_345` like `t_pic_record_300`;
+
+    create table `t_pic_record_346` like `t_pic_record_300`;
+
+    create table `t_pic_record_347` like `t_pic_record_300`;
+
+    create table `t_pic_record_348` like `t_pic_record_300`;
+
+    create table `t_pic_record_349` like `t_pic_record_300`;
+
+    create table `t_pic_record_350` like `t_pic_record_300`;
+
+    create table `t_pic_record_351` like `t_pic_record_300`;
+
+    create table `t_pic_record_352` like `t_pic_record_300`;
+
+    create table `t_pic_record_353` like `t_pic_record_300`;
+
+    create table `t_pic_record_354` like `t_pic_record_300`;
+
+    create table `t_pic_record_355` like `t_pic_record_300`;
+
+    create table `t_pic_record_356` like `t_pic_record_300`;
+
+    create table `t_pic_record_357` like `t_pic_record_300`;
+
+    create table `t_pic_record_358` like `t_pic_record_300`;
+
+    create table `t_pic_record_359` like `t_pic_record_300`;
+
+    create table `t_pic_record_360` like `t_pic_record_300`;
+
+    create table `t_pic_record_361` like `t_pic_record_300`;
+
+    create table `t_pic_record_362` like `t_pic_record_300`;
+
+    create table `t_pic_record_363` like `t_pic_record_300`;
+
+    create table `t_pic_record_364` like `t_pic_record_300`;
+
+    create table `t_pic_record_365` like `t_pic_record_300`;
+
+    create table `t_pic_record_366` like `t_pic_record_300`;
+
+    create table `t_pic_record_367` like `t_pic_record_300`;
+
+    create table `t_pic_record_368` like `t_pic_record_300`;
+
+    create table `t_pic_record_369` like `t_pic_record_300`;
+
+    create table `t_pic_record_370` like `t_pic_record_300`;
+
+    create table `t_pic_record_371` like `t_pic_record_300`;
+
+    create table `t_pic_record_372` like `t_pic_record_300`;
+
+    create table `t_pic_record_373` like `t_pic_record_300`;
+
+    create table `t_pic_record_374` like `t_pic_record_300`;
+
+    create table `t_pic_record_375` like `t_pic_record_300`;
+
+    create table `t_pic_record_376` like `t_pic_record_300`;
+
+    create table `t_pic_record_377` like `t_pic_record_300`;
+
+    create table `t_pic_record_378` like `t_pic_record_300`;
+
+    create table `t_pic_record_379` like `t_pic_record_300`;
+
+    create table `t_pic_record_380` like `t_pic_record_300`;
+
+    create table `t_pic_record_381` like `t_pic_record_300`;
+
+    create table `t_pic_record_382` like `t_pic_record_300`;
+
+    create table `t_pic_record_383` like `t_pic_record_300`;
+
+    create table `t_pic_record_384` like `t_pic_record_300`;
+
+    create table `t_pic_record_385` like `t_pic_record_300`;
+
+    create table `t_pic_record_386` like `t_pic_record_300`;
+
+    create table `t_pic_record_387` like `t_pic_record_300`;
+
+    create table `t_pic_record_388` like `t_pic_record_300`;
+
+    create table `t_pic_record_389` like `t_pic_record_300`;
+
+    create table `t_pic_record_390` like `t_pic_record_300`;
+
+    create table `t_pic_record_391` like `t_pic_record_300`;
+
+    create table `t_pic_record_392` like `t_pic_record_300`;
+
+    create table `t_pic_record_393` like `t_pic_record_300`;
+
+    create table `t_pic_record_394` like `t_pic_record_300`;
+
+    create table `t_pic_record_395` like `t_pic_record_300`;
+
+    create table `t_pic_record_396` like `t_pic_record_300`;
+
+    create table `t_pic_record_397` like `t_pic_record_300`;
+
+    create table `t_pic_record_398` like `t_pic_record_300`;
+
+    create table `t_pic_record_399` like `t_pic_record_300`;
+  face4.sql: |-
+    use face;
+
+    CREATE TABLE IF NOT EXISTS `t_pic_record_400` (
+       `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键',
+       `appid` varchar(48) NOT NULL DEFAULT 'local' COMMENT 'app标识',
+       `groupid` varchar(48) NOT NULL DEFAULT 'test' COMMENT '照片类型',
+       `userid` varchar(128) NOT NULL DEFAULT '' COMMENT '用户id',
+       `user_info` varchar(256) NOT NULL DEFAULT '' COMMENT '用户信息',
+       `imageid` varchar(128) NOT NULL DEFAULT '' COMMENT '图片pic_id',
+       `faceid` varchar(128) NOT NULL DEFAULT '',
+       `feature` varchar(4096) NOT NULL,
+       `index_json` varchar(4096) NOT NULL DEFAULT '',
+       `status` tinyint(4) NOT NULL DEFAULT '0' COMMENT '标记状态',
+       `delete_flag` int(11) NOT NULL DEFAULT '0' COMMENT '软删字段',
+       `create_time` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+       `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '自动更新时间',
+       PRIMARY KEY (`id`),
+       KEY `faceid_index` (`faceid`),
+       KEY `user_shz_index` (`appid`,`groupid`,`userid`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='信息记录表';
+
+    create table `t_pic_record_401` like `t_pic_record_400`;
+
+    create table `t_pic_record_402` like `t_pic_record_400`;
+
+    create table `t_pic_record_403` like `t_pic_record_400`;
+
+    create table `t_pic_record_404` like `t_pic_record_400`;
+
+    create table `t_pic_record_405` like `t_pic_record_400`;
+
+    create table `t_pic_record_406` like `t_pic_record_400`;
+
+    create table `t_pic_record_407` like `t_pic_record_400`;
+
+    create table `t_pic_record_408` like `t_pic_record_400`;
+
+    create table `t_pic_record_409` like `t_pic_record_400`;
+
+    create table `t_pic_record_410` like `t_pic_record_400`;
+
+    create table `t_pic_record_411` like `t_pic_record_400`;
+
+    create table `t_pic_record_412` like `t_pic_record_400`;
+
+    create table `t_pic_record_413` like `t_pic_record_400`;
+
+    create table `t_pic_record_414` like `t_pic_record_400`;
+
+    create table `t_pic_record_415` like `t_pic_record_400`;
+
+    create table `t_pic_record_416` like `t_pic_record_400`;
+
+    create table `t_pic_record_417` like `t_pic_record_400`;
+
+    create table `t_pic_record_418` like `t_pic_record_400`;
+
+    create table `t_pic_record_419` like `t_pic_record_400`;
+
+    create table `t_pic_record_420` like `t_pic_record_400`;
+
+    create table `t_pic_record_421` like `t_pic_record_400`;
+
+    create table `t_pic_record_422` like `t_pic_record_400`;
+
+    create table `t_pic_record_423` like `t_pic_record_400`;
+
+    create table `t_pic_record_424` like `t_pic_record_400`;
+
+    create table `t_pic_record_425` like `t_pic_record_400`;
+
+    create table `t_pic_record_426` like `t_pic_record_400`;
+
+    create table `t_pic_record_427` like `t_pic_record_400`;
+
+    create table `t_pic_record_428` like `t_pic_record_400`;
+
+    create table `t_pic_record_429` like `t_pic_record_400`;
+
+    create table `t_pic_record_430` like `t_pic_record_400`;
+
+    create table `t_pic_record_431` like `t_pic_record_400`;
+
+    create table `t_pic_record_432` like `t_pic_record_400`;
+
+    create table `t_pic_record_433` like `t_pic_record_400`;
+
+    create table `t_pic_record_434` like `t_pic_record_400`;
+
+    create table `t_pic_record_435` like `t_pic_record_400`;
+
+    create table `t_pic_record_436` like `t_pic_record_400`;
+
+    create table `t_pic_record_437` like `t_pic_record_400`;
+
+    create table `t_pic_record_438` like `t_pic_record_400`;
+
+    create table `t_pic_record_439` like `t_pic_record_400`;
+
+    create table `t_pic_record_440` like `t_pic_record_400`;
+
+    create table `t_pic_record_441` like `t_pic_record_400`;
+
+    create table `t_pic_record_442` like `t_pic_record_400`;
+
+    create table `t_pic_record_443` like `t_pic_record_400`;
+
+    create table `t_pic_record_444` like `t_pic_record_400`;
+
+    create table `t_pic_record_445` like `t_pic_record_400`;
+
+    create table `t_pic_record_446` like `t_pic_record_400`;
+
+    create table `t_pic_record_447` like `t_pic_record_400`;
+
+    create table `t_pic_record_448` like `t_pic_record_400`;
+
+    create table `t_pic_record_449` like `t_pic_record_400`;
+
+    create table `t_pic_record_450` like `t_pic_record_400`;
+
+    create table `t_pic_record_451` like `t_pic_record_400`;
+
+    create table `t_pic_record_452` like `t_pic_record_400`;
+
+    create table `t_pic_record_453` like `t_pic_record_400`;
+
+    create table `t_pic_record_454` like `t_pic_record_400`;
+
+    create table `t_pic_record_455` like `t_pic_record_400`;
+
+    create table `t_pic_record_456` like `t_pic_record_400`;
+
+    create table `t_pic_record_457` like `t_pic_record_400`;
+
+    create table `t_pic_record_458` like `t_pic_record_400`;
+
+    create table `t_pic_record_459` like `t_pic_record_400`;
+
+    create table `t_pic_record_460` like `t_pic_record_400`;
+
+    create table `t_pic_record_461` like `t_pic_record_400`;
+
+    create table `t_pic_record_462` like `t_pic_record_400`;
+
+    create table `t_pic_record_463` like `t_pic_record_400`;
+
+    create table `t_pic_record_464` like `t_pic_record_400`;
+
+    create table `t_pic_record_465` like `t_pic_record_400`;
+
+    create table `t_pic_record_466` like `t_pic_record_400`;
+
+    create table `t_pic_record_467` like `t_pic_record_400`;
+
+    create table `t_pic_record_468` like `t_pic_record_400`;
+
+    create table `t_pic_record_469` like `t_pic_record_400`;
+
+    create table `t_pic_record_470` like `t_pic_record_400`;
+
+    create table `t_pic_record_471` like `t_pic_record_400`;
+
+    create table `t_pic_record_472` like `t_pic_record_400`;
+
+    create table `t_pic_record_473` like `t_pic_record_400`;
+
+    create table `t_pic_record_474` like `t_pic_record_400`;
+
+    create table `t_pic_record_475` like `t_pic_record_400`;
+
+    create table `t_pic_record_476` like `t_pic_record_400`;
+
+    create table `t_pic_record_477` like `t_pic_record_400`;
+
+    create table `t_pic_record_478` like `t_pic_record_400`;
+
+    create table `t_pic_record_479` like `t_pic_record_400`;
+
+    create table `t_pic_record_480` like `t_pic_record_400`;
+
+    create table `t_pic_record_481` like `t_pic_record_400`;
+
+    create table `t_pic_record_482` like `t_pic_record_400`;
+
+    create table `t_pic_record_483` like `t_pic_record_400`;
+
+    create table `t_pic_record_484` like `t_pic_record_400`;
+
+    create table `t_pic_record_485` like `t_pic_record_400`;
+
+    create table `t_pic_record_486` like `t_pic_record_400`;
+
+    create table `t_pic_record_487` like `t_pic_record_400`;
+
+    create table `t_pic_record_488` like `t_pic_record_400`;
+
+    create table `t_pic_record_489` like `t_pic_record_400`;
+
+    create table `t_pic_record_490` like `t_pic_record_400`;
+
+    create table `t_pic_record_491` like `t_pic_record_400`;
+
+    create table `t_pic_record_492` like `t_pic_record_400`;
+
+    create table `t_pic_record_493` like `t_pic_record_400`;
+
+    create table `t_pic_record_494` like `t_pic_record_400`;
+
+    create table `t_pic_record_495` like `t_pic_record_400`;
+
+    create table `t_pic_record_496` like `t_pic_record_400`;
+
+    create table `t_pic_record_497` like `t_pic_record_400`;
+
+    create table `t_pic_record_498` like `t_pic_record_400`;
+
+    create table `t_pic_record_499` like `t_pic_record_400`;

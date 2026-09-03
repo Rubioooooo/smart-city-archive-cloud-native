@@ -1,0 +1,14 @@
+apiVersion: v1
+data:
+  database_init.sql: |-
+
+    -- create db 'face'
+    CREATE DATABASE IF NOT EXISTS face
+      default character set utf8
+      default collate utf8_general_ci;
+
+    flush privileges;
+kind: ConfigMap
+metadata:
+  name: {{ template "mysql.fullname" . }}-database-init
+  namespace: {{ .Release.Namespace }}

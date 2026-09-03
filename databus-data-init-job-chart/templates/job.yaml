@@ -1,0 +1,41 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ template "mysql.fullname" . }}-job
+spec:
+  template:
+    spec:
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      containers:
+      - name: databus-data-init-job
+        image: "{{ .Values.Image}}:{{ .Values.ImageTag }}"
+        imagePullPolicy: {{ .Values.imagePullPolicy | quote }}
+        command: ["/bin/bash",  "/data/scripts/alone.sh"]
+        resources:
+{{ toYaml .Values.resources | indent 10 }}
+        env:
+        - name: TZ
+          value: Asia/Shanghai
+        volumeMounts:
+          # 1、存放脚本
+          - name: script
+            mountPath: /data/scripts/
+          # 2、存放创建库的sql
+          - name: database-init
+            mountPath: /data/scripts/database/
+          # 3、存放初始化库face(建表、插数据)的sql
+          - name: face-init
+            mountPath: /data/scripts/datainit/face/
+      volumes:
+        - name: script
+          configMap:
+            name: {{ template "mysql.fullname" . }}-alone-script-configmap
+        - name: database-init
+          configMap:
+            name: {{ template "mysql.fullname" . }}-database-init
+        - name: face-init
+          configMap:
+            name: {{ template "mysql.fullname" . }}-face-init
+
+      restartPolicy: OnFailure

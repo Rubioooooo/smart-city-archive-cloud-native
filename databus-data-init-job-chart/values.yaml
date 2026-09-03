@@ -1,0 +1,14 @@
+Image: databus
+ImageTag: v1.0
+ImagePullPolicy: IfNotPresent
+resources:
+  requests:
+    memory: 1Gi
+    cpu: 100m
+  limits:
+    memory: 8Gi
+    cpu: 4
+databus:
+  mysqlRootPassword: 'xxxxx'
+  port: 5535
+  ip: databus-service
