@@ -1,0 +1,10 @@
+FROM registry.example.com/public/busybox:1.32
+
+ADD kubectl /bin/kubectl
+ADD helm /bin/helm
+ADD yq_linux_amd64 /bin/yq
+ADD Shanghai /etc/localtime
+
+RUN chmod +x /bin/kubectl /bin/helm /bin/yq 
+
+ENV LANG=C.UTF-8

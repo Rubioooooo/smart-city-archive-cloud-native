@@ -1,0 +1,203 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: aise-gd-cronjob-configmap
+  namespace: {{ .Release.Namespace }}
+data:
+  monitor_se.sh: |
+    #!/bin/bash
+    alias kubectl='/bin/kubectl -n {{ .Release.Namespace }}'
+    alias helm='/bin/helm -n {{ .Release.Namespace }}'
+
+    
+    function detect_ready(){
+      workload=$1
+      detect_name=$2
+      i=0
+      while true;
+      do
+          # 总副本数
+          spec_replicas=$(kubectl  get $workload $detect_name -o jsonpath='{.spec.replicas}')
+          # 当前就绪的副本数
+          available_replicas=$(kubectl  get $workload $detect_name -o jsonpath='{.status.availableReplicas}')
+    
+          echo "${detect_name} 总副本数:$spec_replicas 已就绪副本数:$available_replicas"
+          if [ $spec_replicas -eq $available_replicas ];then
+              break
+          fi
+          sleep 1
+          let i++
+      done
+    }
+    
+    function logger(){
+        msg=$1
+        echo "$(date +%F_%H:%M:%S) $msg"
+    }
+    
+    function update_gd_cm() {
+        # 1、提取aise-gd当前再用的cm内容
+        kubectl get configmap aise-gd-statefulset-configmap -o yaml > /tmp/1.yaml
+    
+        # 2、清理掉注解部分（注解信息会影响我们对yaml的匹配与修改规则）
+        yq e 'del(.metadata.annotations)' /tmp/1.yaml > /tmp/2.yaml
+    
+    
+    
+        # 3、获取当前最新的切片信息（包括切片分组id与pod的fqdn域名:端口）
+        # 无头服务名
+        svc_name="aise-se-service"
+        # pod监听的端口
+        targetport=$(kubectl get svc $svc_name -o jsonpath='{.spec.ports[0].targetPort}')
+    
+        # 获取当前最新的切片信息，存入数组，key为切片id，value为同组内的pod的endpoint，多个则用逗号分隔
+        declare -a array
+        for pod_name in `kubectl get pods -l type=aise-se -o jsonpath='{.items[*].metadata.name}'`
+        do
+            pod_is_ready=$(kubectl get pod $pod_name -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}')
+            if [ $pod_is_ready == 'True' ];then
+                echo "$pod_name处于就绪状态，获取其配置中的physical_physical_partition_id存入数组"
+    
+                # 从配置文件中获取切片id号
+                physical_shard_id=$(kubectl  exec $pod_name cat /home/idl-face/aise_1.0.29.1/conf/aise.conf |grep physical_partition_id |grep -v '^#' |uniq | awk -F': ' '{print $2}')
+    
+                # 获取pod的地址
+                #pod_ip=$(kubectl  get pods $pod_name -o jsonpath='{.status.podIP}')
+                pod_ip=${pod_name}.${svc_name}.{{ .Release.Namespace }}.svc.cluster.local
+                
+                # 如果某个physical_shard_id已经存在于array中，则在原有基础上累加，逗号分割即可
+                # 例如：array[0]=1.1.1.1:3333,2.2.2.2:5555,3.3.3.3:666
+                if [ -n "${array[$physical_shard_id]}" ];then
+                    array[$physical_shard_id]=$(echo ${array[$physical_shard_id]}",$pod_ip:$targetport")
+                    continue
+                fi
+    
+                array[$physical_shard_id]="$pod_ip:$targetport"
+            fi
+        done
+    
+    
+        # 4、依据新的分组信息，生成新的router.conf配置并覆盖到/tmp/2.yaml
+        # 4.1 清空cm下router.conf的子配置，会变成router.conf: ""的形式
+        yq e '.data["router.conf"] = ""' -i /tmp/2.yaml
+    
+        # 4.2 替换为router.conf: |的形式，为接下来的写入做准备
+        sed -i 's/router.conf: ""/router.conf: |/g' /tmp/2.yaml
+    
+        # 4.3 router.conf中的一段固定配置
+        cat > /tmp/r.conf << EOF
+            # 路由配置文件的模板, 请按照实际情况修改servers
+            [server_list]
+            # 获取路由信息的方式，目前支持static、dynamic
+            type:static
+            # type: dynamic
+            # 组配置唯一标识组的参数配置名称, 注意mapper函数中的shard_index为这里@servers配置的顺序(从0开始)
+            key:physical_shard_id
+            # 对一组服务访问失败的最大尝试次数；
+            max_retry: 0
+            # 访问超时时间
+            timeout_ms: 2000
+            # 对多组服务的并发访问，允许失败的个数。默认为0，即当有一个服务访问失败时，整个服务的访问失败。
+            fail_limit: 0
+            # 支持的负载均衡算法：rr, random, la, c_murmurhash, c_md5, _dynpart
+            load_balancer:rr
+            # 多组服务按照如下方式添加多个[.@servers], 注意分布式框架暂时不支持服务组的增加和删除，只支持副本的动态修改；
+ 
+    EOF
+    
+        # 4.4 循环添加切片信息相关配置
+        for i in ${!array[*]}  # echo ${!array[*]}  # 变量i是切片id号，对应的值是pod的endpoint
+        do
+        physical_shard_id=$i
+        servers=${array[$i]}
+        cat >> /tmp/r.conf << EOF
+            [@shard_group]
+            physical_shard_id: $i
+            servers: ${array[$i]}
+    
+    EOF
+    
+        done
+    
+        # 4.5 将新生产的配置写入/tmp/2.yaml
+        sed -i '/router.conf: |$/r /tmp/r.conf' /tmp/2.yaml
+    
+    
+    
+        # 5、统计新切片数，并完成yaml修改
+        new_partitions=$(echo ${#array[@]})  # 数组的长度
+        sed -i "s/num_of_physical_partitions: [0-9]\+/num_of_physical_partitions: ${new_partitions}/" /tmp/2.yaml
+    
+    
+        # 6、更像该yaml，完成aise-gd的configmap的更新，如果内容确实发生更新，则reloader组件会重启aise-gd的pod
+        kubectl apply -f /tmp/2.yaml
+    }
+    
+    function timer() {
+        # $1: 起始时间
+        # $2: 结束时间
+        # $3: step间隔
+        start=$1
+        stop=$2
+        step=$3
+        #logger "start:$start stop:$stop step:$step"
+        interval=$(($stop -  $start))
+        if [ $interval -le $step ];then
+            # 时间间隔小于固定步长
+            # 剩余需要sleep的时间t=step - interval
+            # 增长的时间runtime=step
+            t=$(($step - $interval))
+            runtime=$step
+        else
+            # 时间间隔大于固定步长
+            # 剩余需要sleep的时间t=(step - (interval % step))
+            # runtime=interval+t
+            t=$(($step - ($interval % $step)))
+            runtime=$(($interval + $t))
+        fi
+        #logger "剩余sleep时间: $t,本次runtime共计: $runtime"
+        let startTime_s+=$runtime
+        sleep $t
+    
+    }
+    
+    
+    # 规定时间间隔为60秒
+    startTime_s=`date +%s`
+    stopTime_s=$(($startTime_s+ 60))
+    
+    # step为时间间隔
+    step=5
+    while [ $startTime_s -lt $stopTime_s ];
+    do
+        logger "本次job剩余完成时间：$(($stopTime_s - $startTime_s))"
+        # 1、获取起始时间
+        start=`date +%s`
+    
+        # 2、获取安装的se与gd的名字
+        se_name=$(kubectl get statefulsets.apps -l type=aise-se -o jsonpath='{.items[*].metadata.name}')
+        #gd_name=$(kubectl get statefulsets.apps -l type=aise-gd -o jsonpath='{.items[*].metadata.name}')
+        gd_name=$(kubectl get deployments.apps -l type=aise-gd -o jsonpath='{.items[*].metadata.name}')
+        if [ -z "$se_name" ];then
+            logger "检测到aise-se未安装，必须预先安装"
+            stop=`date +%s`
+            timer $start $stop $step
+            continue
+        fi
+    
+        # 3、获取当前aise-se集群的最新的切片信息，更新到aise-gd的cm中触发其更新
+        # 注意：
+        #    (1) 不必等到aise-se所有副本继续，对于挂掉的副本update_gd_cm会忽略其配置，同步给aise-gd的都是就绪的
+        #    (2) 不用比对，你得到新的cm然后apply -f之后k8s自会比对前后配置是否有变动
+        update_gd_cm
+    
+        # 4、检测aise-gd更新完成
+        detect_ready deployment $gd_name # 确保aise-gd的更新完成
+        logger "aise-gd更新完成"
+    
+        # 5、获取结束时间戳,传入timer
+        stop=`date +%s`
+        timer $start $stop $step
+    
+    done
+    logger "本次job结束"
