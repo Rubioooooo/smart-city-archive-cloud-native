@@ -19,6 +19,14 @@ odp:
     ip: feature-service.default.svc.cluster.local. 
     port: 8815
   
+  # cluster.conf 不随公开仓库分发，属于环境相关的数据库集群路由配置。
+  # 部署环境必须提前创建一个包含该内容的 ConfigMap，并在安装时指定其名称：
+  #   configMapName: 外部 ConfigMap 名称（必填，Chart 在 render 阶段 fail-fast 校验）
+  #   key:           该 ConfigMap 中 cluster.conf 对应的 key（默认 cluster.conf）
+  clusterConf:
+    configMapName: ""
+    key: "cluster.conf"
+
   # 组删除脚本(异步删除组数据)的执行时间间隔。单位s
   # pod内执行命令为：/home/idl-face/odp/hhvm/bin/hhvm /home/idl-face/odp/app/face-api/script/DeleteGroup.php
   delgroupInterval: 300

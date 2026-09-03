@@ -29,13 +29,34 @@ does not substitute unverified package versions.
 
 ## Environment-specific runtime configuration
 
-The odp chart requires a ConfigMap key named cluster.conf:
+cluster.conf is ODP's environment-specific database cluster routing
+configuration. It is not distributed with this public repository,
+and its actual content is intentionally not fabricated here.
+The odp chart does not generate cluster.conf content.
 
-- the Deployment mounts it (subPath /tmp/cluster.conf)
+The deployment environment must provide cluster.conf through an
+external ConfigMap before installing the odp chart:
+
+1. Create the ConfigMap in the target namespace from the
+   environment-specific file (interface example only, no real values
+   are provided by this repository):
+
+    kubectl create configmap <name> --from-file=cluster.conf=<environment-specific-file>
+
+2. Point the chart at that ConfigMap when installing:
+
+    --set odp.clusterConf.configMapName=<name>
+
+   The ConfigMap key defaults to cluster.conf; use
+   --set odp.clusterConf.key=<key> only if the external ConfigMap
+   stores the file under a different key.
+
+Chart behavior:
+
+- helm render fails fast with an explicit error when
+  odp.clusterConf.configMapName is not set (the chart cannot verify
+  that the ConfigMap actually exists in the cluster).
+- the Deployment mounts the external ConfigMap
+  (subPath /tmp/cluster.conf)
 - the startup script waits for /tmp/cluster.conf and copies it to the
   runtime DB cluster routing location
-
-cluster.conf contains environment-specific database cluster routing
-configuration. Its actual topology is intentionally not populated in
-this public repository. Deployment environments must provide the
-appropriate cluster.conf content when installing the odp chart.

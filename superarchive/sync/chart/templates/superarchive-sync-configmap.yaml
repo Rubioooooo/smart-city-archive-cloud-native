@@ -141,7 +141,7 @@ data:
             ipReplaceThree: {{ .Values.sync.snapshot.ipReplaceThree }}
             portReplaceThree: {{ .Values.sync.snapshot.portReplaceThree }}
             replaceUrlFour: {{ .Values.sync.snapshot.replaceUrlFour }}  # 作用同replaceUrlOne，解决多图片服务数据源的情况; ipReplaceFour: 203.0.113.12
-            ipReplaceFour: {{ .Values.sync.snapshot.ipReplaceFoure }}
+            ipReplaceFour: {{ .Values.sync.snapshot.ipReplaceFour }}
             portReplaceFour: {{ .Values.sync.snapshot.portReplaceFour }}
             useFeature: {{ .Values.sync.snapshot.useFeature }}
           qualify:

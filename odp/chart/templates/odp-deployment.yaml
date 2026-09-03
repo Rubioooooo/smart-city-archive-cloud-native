@@ -1,3 +1,4 @@
+{{- $clusterConfConfigMapName := required "odp.clusterConf.configMapName is required: ODP requires an external cluster.conf ConfigMap (see odp/image-build/README.txt)" .Values.odp.clusterConf.configMapName -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -99,7 +100,7 @@ spec:
         - name: configurations
           mountPath: /tmp/feature.conf
           subPath: feature.conf
-        - name: configurations
+        - name: cluster-conf
           mountPath: /tmp/cluster.conf
           subPath: cluster.conf
 
@@ -119,3 +120,9 @@ spec:
       - name: configurations
         configMap:
           name: {{ .Values.odp.name }}-configmap
+      - name: cluster-conf
+        configMap:
+          name: {{ $clusterConfConfigMapName }}
+          items:
+          - key: {{ .Values.odp.clusterConf.key | default "cluster.conf" }}
+            path: cluster.conf
