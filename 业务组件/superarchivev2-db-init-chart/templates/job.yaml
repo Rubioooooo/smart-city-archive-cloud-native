@@ -1,0 +1,42 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ template "mysql.fullname" . }}-job
+spec:
+  ttlSecondsAfterFinished: 600
+  template:
+    spec:
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      containers:
+      - name: superarchivev2-db-init
+        image: "{{ .Values.Image}}:{{ .Values.ImageTag }}"
+        imagePullPolicy: {{ .Values.imagePullPolicy | quote }}
+        command: ["/bin/bash",  "/data/scripts/alone.sh"]
+        resources:
+{{ toYaml .Values.resources | indent 10 }}
+        env:
+        - name: TZ
+          value: Asia/Shanghai
+        volumeMounts:
+          # 1、存放脚本
+          - name: script
+            mountPath: /data/scripts/
+          # 2、存放创建库的sql
+          - name: db-create
+            mountPath: /data/scripts/database/
+          # 3、存放初始化库face(建表、插数据)的sql
+          - name: superarchivev2-db-init
+            mountPath: /data/scripts/datainit/superarchivev2
+      volumes:
+        - name: script
+          configMap:
+            name: {{ template "mysql.fullname" . }}-mysql-ha-alone-script-configmap
+        - name: db-create
+          configMap:
+            name: {{ template "mysql.fullname" . }}-db-create
+        - name: superarchivev2-db-init
+          configMap:
+            name: {{ template "mysql.fullname" . }}-superarchivev2-db-init
+
+      restartPolicy: OnFailure

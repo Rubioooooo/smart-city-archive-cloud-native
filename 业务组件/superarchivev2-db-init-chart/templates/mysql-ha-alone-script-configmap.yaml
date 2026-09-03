@@ -1,0 +1,51 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  #name: mysql-alone-script-configmap
+  name: {{ template "mysql.fullname" . }}-mysql-ha-alone-script-configmap
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ template "mysql.fullname" . }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    heritage: "{{ .Release.Service }}"
+    release: "{{ .Release.Name }}"
+data:
+  alone.sh: |
+    pass={{ .Values.mysql.pass }}
+    user={{ .Values.mysql.user }}
+    Port={{ .Values.mysql.port }}
+    IP={{ .Values.mysql.ip }}
+    while true
+    do
+        pong=$(/home/idl-face/databus5535/bin/mysqladmin ping -h $IP -P $Port -u $user -p$pass)
+        echo "---pong is $pong"
+        if [[ "$pong" = *alive* ]]; then
+          echo "--mysql is ready..."
+          break
+        fi
+       echo "--mysql not ready..."
+       sleep 5s
+    done
+
+    #echo "---start set libcompare.so"
+    #masterinfo=$(/home/idl-face/databus5535/bin/mysql -h ''${HOSTNAME}'' -P $Port -u $user -p$pass -e"DROP FUNCTION IF EXISTS do_compare_utf8; \
+    #CREATE FUNCTION do_compare_utf8 RETURNS INT SONAME 'libcompare.so'");
+    #echo "---end set libcompare.so $masterinfo"
+    echo "------------开始新建数据库-------------"
+    mysql -h $IP -P $Port -u $user -p$pass -e"source /data/scripts/database/database_init.sql"
+    echo -e "------------数据库新建完成!------------"
+    export SCRIPTS_DIR=/data/scripts/datainit
+    for db in `ls $SCRIPTS_DIR`;
+    do
+        if [ -d "$SCRIPTS_DIR/" ];then
+            echo "开始初始化数据库数据: $db......"
+            for sqlFile in `ls ${SCRIPTS_DIR}/$db/ | grep .sql`;
+            do
+                echo "正在执行sql文件：$sqlFile ..."
+                mysql -h $IP -P $Port -u $user -p$pass $db -e "source $SCRIPTS_DIR/$db/$sqlFile"
+            done
+            echo -e "数据库初始化完成: $db ! \033[32m success \033[0m"
+        fi
+    done
+    echo "全部数据初始化完成"
+

@@ -1,0 +1,36 @@
+Image: databus
+ImageTag: v1.0
+ImagePullPolicy: IfNotPresent
+resources:
+  requests:
+    memory: 1Gi
+    cpu: 100m
+  limits:
+    memory: 8Gi
+    cpu: 4
+    
+mysql:
+  # databus的主库的svc
+  ip: master-service.default.svc.cluster.local
+  port: 32031
+  user: root
+  pass: xxxxx
+  db: superarchivev2
+
+
+web:
+  server:
+    ip: 127.0.0.1
+    port: 18087
+
+job:
+  # job模块是部署于物理机的，此处job模块部署的物理机的ip地址或可解析的主机名、不能用127.0.0.1
+  ip: 192.0.2.10
+  port: 8066
+  # 修改libMergeAPI.so在物理机上的路径，该物理机即部署job模块的物理机，libMergeAPI.so的md5值：5a114f314def97eaff96fa801b0c01d3
+  soPath: /data/aicu-tob/software/new/so/libMergeAPI.so
+
+hdfs:
+  # 查看hadoop配置文件hadoop-2.10.1/etc/hadoop/hdfs-site.xml获取namenode的rpc端口
+  ip: hdfs-node.example.internal
+  port: 9000

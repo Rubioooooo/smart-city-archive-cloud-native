@@ -1,0 +1,402 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "mysql.fullname" . }}-superarchivev2-db-init
+  namespace: {{ .Release.Namespace }}
+data:
+  superarchivev2-db-init.sql: |-
+    CREATE DATABASE IF NOT EXISTS superarchivev2;
+    
+    use superarchivev2;
+    
+    SET NAMES utf8mb4;
+    
+    -- ----------------------------
+    -- Table structure for arch_pictures
+    -- ----------------------------
+    CREATE TABLE IF NOT EXISTS `arch_pictures` (
+      `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+      `image_id` varchar(256) NOT NULL COMMENT '人脸imageid',
+      `background_image_id` varchar(256) NOT NULL COMMENT '背景图id',
+      `feature` blob NOT NULL COMMENT '人脸特征',
+      `camera_id` varchar(20) NOT NULL COMMENT '摄像头id',
+      `snapshot_time` bigint(20) NOT NULL COMMENT '抓拍时间',
+      `car_plate` varchar(50) NOT NULL DEFAULT '' COMMENT '车牌',
+      `face_score` decimal(5,2) DEFAULT NULL COMMENT '人脸质量分数',
+      `face_blur` decimal(5,2) DEFAULT NULL COMMENT '人脸模糊度',
+      `occlu` varchar(512) DEFAULT NULL COMMENT '人脸遮挡',
+      `age_type` tinyint(2) DEFAULT NULL COMMENT '人脸年龄段',
+      `main_driver` tinyint(2) NOT NULL DEFAULT '0' COMMENT '主副驾 1-主驾 2-副驾',
+      `face_attr` varchar(512) DEFAULT '0' COMMENT '人脸属性,目前只有口罩，之后会有多个属性',
+      `create_time` bigint(20) NOT NULL COMMENT '创建时间',
+      PRIMARY KEY (`id`),
+      KEY `idx_imgid` (`image_id`),
+      KEY `idx_create_time` (`create_time`) USING BTREE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+    
+    
+    -- ----------------------------
+    -- Table structure for arch_suspicious_docs
+    -- ----------------------------
+    CREATE TABLE IF NOT EXISTS `arch_suspicious_docs` (
+      `id` bigint(20) NOT NULL COMMENT 'Pk',
+      `day_doc_id` bigint(20) NOT NULL COMMENT '天级库档案id',
+      `history_doc` varchar(2000) NOT NULL COMMENT '历史档案 H1:score1,H2:score2',
+      `state` tinyint(2) NOT NULL DEFAULT '0' COMMENT '可疑档流转状态 0-新增 10-已处理成功',
+      `create_time` bigint(20) NOT NULL COMMENT '创建时间',
+      `update_time` bigint(20) NOT NULL COMMENT '更新时间',
+      PRIMARY KEY (`id`),
+      KEY `idx_update` (`update_time`) USING BTREE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+    
+    
+    -- ----------------------------
+    -- Table structure for arch_third_party_devices
+    -- ----------------------------
+    CREATE TABLE IF NOT EXISTS `arch_third_party_devices` (
+      `id` bigint(20) NOT NULL AUTO_INCREMENT,
+      `area` varchar(255) DEFAULT NULL,
+      `camera_account` varchar(255) DEFAULT NULL,
+      `camera_brand` varchar(255) DEFAULT NULL,
+      `camera_ip` varchar(255) DEFAULT NULL,
+      `camera_name` varchar(255) DEFAULT NULL,
+      `camera_password` varchar(255) DEFAULT NULL,
+      `device_id` varchar(255) DEFAULT NULL,
+      `height` int(11) DEFAULT NULL,
+      `info` varchar(255) DEFAULT NULL,
+      `output_video_url` varchar(255) DEFAULT NULL,
+      `owner_id` bigint(20) DEFAULT NULL,
+      `port` int(11) DEFAULT NULL,
+      `rtsp_url` varchar(255) DEFAULT NULL,
+      `status` varchar(20) DEFAULT NULL,
+      `width` int(11) DEFAULT NULL,
+      `scene_id` bigint(20) DEFAULT NULL,
+      `gb_id` varchar(255) DEFAULT NULL,
+      `access_type` varchar(255) DEFAULT NULL,
+      `type` varchar(255) DEFAULT NULL,
+      `created_by` varchar(255) DEFAULT NULL,
+      `created_date` datetime DEFAULT NULL,
+      `last_modified_by` varchar(255) DEFAULT NULL,
+      `last_modified_date` datetime DEFAULT NULL,
+      `last_sync_at` datetime DEFAULT NULL,
+      `latitude` double(10,6) DEFAULT NULL,
+      `manufactor_code` varchar(255) DEFAULT NULL,
+      `model` varchar(255) DEFAULT NULL,
+      `function_type` varchar(255) DEFAULT NULL,
+      `longitude` double(10,6) DEFAULT NULL,
+      PRIMARY KEY (`id`) USING BTREE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+    
+    
+    -- ----------------------------
+    -- Table structure for arch_searched_doc_info
+    -- ----------------------------
+    CREATE TABLE IF NOT EXISTS `arch_searched_doc_info` (
+      `id` bigint(20) NOT NULL AUTO_INCREMENT,
+      `create_time` bigint(20) DEFAULT NULL,
+      `doc_id` bigint(20) DEFAULT NULL,
+      `document` varchar(255) DEFAULT NULL,
+      `encrypted_key` varchar(255) DEFAULT NULL,
+      `pic_list` varchar(255) DEFAULT NULL,
+      PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+    
+    
+    
+    CREATE TABLE IF NOT EXISTS `arch_dict` (
+      `id` bigint(20) NOT NULL AUTO_INCREMENT,
+      `description` varchar(500) DEFAULT NULL,
+      `dict_key` varchar(100) NOT NULL,
+      `dict_value` text NOT NULL,
+      PRIMARY KEY (`id`) USING BTREE,
+      UNIQUE KEY `UK_6hg0fikdbrv661a9hwlrp6i3y` (`dict_key`) USING BTREE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;
+    
+    
+    -- ----------------------------
+    -- Records of arch_dict
+    -- ----------------------------
+    BEGIN;
+    INSERT INTO `arch_dict` VALUES (1, '工程侧参数-以图搜档案是否走C++后处理逻辑，0是走java自己实现的，1走c++实现的', 'is_post_process', '1');
+    INSERT INTO `arch_dict` VALUES (79, '以图搜档负载均衡策略', 'brpc_balancer_search', '');
+    INSERT INTO `arch_dict` VALUES (80, '最大连接数-brpc链接类型为pooled必须配置项,默认为5,建议不超过5', 'max_connection_pool_size', '5');
+    INSERT INTO `arch_dict` VALUES (81, '闲置链接关闭时间阈值-brpc链接类型为pooled为必须配置项,默认为10,建议不超过120', 'idle_timeout_second', '110');
+    INSERT INTO `arch_dict` VALUES (84, 'rpc超时时间,单位(ms)', 'timeout', '300000');
+    INSERT INTO `arch_dict` VALUES (85, 'rpc最大重试次数', 'max_retry_time', '1');
+    INSERT INTO `arch_dict` VALUES (86, 'brpc必备配置', 'cluster_type', 'bdrc');
+    INSERT INTO `arch_dict` VALUES (87, 'brpc链接类型,pooled为长链接,single为单次链接,short为短连接', 'brpc_connect_type', 'single');
+    INSERT INTO `arch_dict` VALUES (88, '如果host为多个实例,使用rr或wrr,否则使用\"\"', 'brpc_balancer', '');
+    INSERT INTO `arch_dict` VALUES (89, '是否打开详细日志,1表示打印debug,trace,warning,fatal,0表示只打印warning,trace,fatal日志', 'detail_log', '1');
+    INSERT INTO `arch_dict` VALUES (90, '日志打印的目录,./logs表示打印到当前目录的./logs/merge.log,当为TTY表示直接打印到终端', 'logdir', 'TTY');
+    INSERT INTO `arch_dict` VALUES (91, '以图搜档日志开关：是否打开详细日志,1表示打印debug,trace,warning,fatal,0表示只打印warning,trace,fatal日志', 'detail_log_search', '1');
+    INSERT INTO `arch_dict` VALUES (92, '以图搜档日志打印的目录,./logs表示打印到当前目录的./logs/merge.log', 'logdir_search', './logs');
+    INSERT INTO `arch_dict` VALUES (93, NULL, 'analyse_index', '34');
+    INSERT INTO `arch_dict` VALUES (94, NULL, 'analyse_interval', '10');
+    INSERT INTO `arch_dict` VALUES (95, NULL, 'realtime_threshold_vector', '0.5');
+    INSERT INTO `arch_dict` VALUES (96, NULL, 'realtime_threshold_car', '0.35');
+    INSERT INTO `arch_dict` VALUES (97, NULL, 'batch_size', '1000');
+    INSERT INTO `arch_dict` VALUES (98, NULL, 'feature_dim', '256');
+    INSERT INTO `arch_dict` VALUES (99, NULL, 'GPU', '2,3');
+    INSERT INTO `arch_dict` VALUES (100, NULL, 'realtime_threshold_connect', '0.7');
+    INSERT INTO `arch_dict` VALUES (101, NULL, 'realtime_split_min_size', '20000');
+    INSERT INTO `arch_dict` VALUES (102, NULL, 'vec_recall_topk_day', '10');
+    INSERT INTO `arch_dict` VALUES (103, NULL, 'vec_recall_thresh_day', '0.45');
+    INSERT INTO `arch_dict` VALUES (104, NULL, 'vec_recall_topk_history', '5');
+    INSERT INTO `arch_dict` VALUES (105, NULL, 'vec_recall_thresh_history', '0.45');
+    INSERT INTO `arch_dict` VALUES (106, NULL, 'attr_recall_type', '1');
+    INSERT INTO `arch_dict` VALUES (107, NULL, 'child_gain', '-0.1');
+    INSERT INTO `arch_dict` VALUES (108, NULL, 'short_distance', '500');
+    INSERT INTO `arch_dict` VALUES (109, NULL, 'short_distance_gain', '0.05');
+    INSERT INTO `arch_dict` VALUES (110, NULL, 'period', '3600');
+    INSERT INTO `arch_dict` VALUES (111, NULL, 'long_distance', '1000');
+    INSERT INTO `arch_dict` VALUES (112, NULL, 'long_distance_gain', '-0.05');
+    INSERT INTO `arch_dict` VALUES (113, NULL, 'low_quality_face_score', '0.8');
+    INSERT INTO `arch_dict` VALUES (114, NULL, 'low_quality_eyeocc', '0.3');
+    INSERT INTO `arch_dict` VALUES (115, NULL, 'low_quality_mask', '1');
+    INSERT INTO `arch_dict` VALUES (116, NULL, 'low_quality_gain', '-0.05');
+    INSERT INTO `arch_dict` VALUES (117, NULL, 'same_car_dist', '1');
+    INSERT INTO `arch_dict` VALUES (118, NULL, 'same_car_gain', '0.15');
+    INSERT INTO `arch_dict` VALUES (119, NULL, 'cluster_lowsim_th', '0.55');
+    INSERT INTO `arch_dict` VALUES (120, NULL, 'cluster_highsim_th', '0.8');
+    INSERT INTO `arch_dict` VALUES (121, '合簇条件-边阈值', 'cluster_pair_th', '0.54');
+    INSERT INTO `arch_dict` VALUES (122, '合簇条件-满足阈值边的百分比', 'ecount_percent', '70');
+    INSERT INTO `arch_dict` VALUES (123, '簇代表点数量', 'cluster_rep_num', '4');
+    INSERT INTO `arch_dict` VALUES (124, '实名化图片质量分阈值', 'realname_quality_score', '0.8');
+    INSERT INTO `arch_dict` VALUES (125, '实名化图片模糊度阈值', 'realname_blur', '0.05');
+    INSERT INTO `arch_dict` VALUES (126, '实名化代表点个数阈值', 'realname_rep_num', '5');
+    INSERT INTO `arch_dict` VALUES (127, '实名化得分计算方法max/avg', 'realname_score_type', 'max');
+    INSERT INTO `arch_dict` VALUES (128, '实名化得分阈值', 'realname_threshold', '90.5');
+    INSERT INTO `arch_dict` VALUES (129, NULL, 'day_cluster_cnt_th', '30');
+    INSERT INTO `arch_dict` VALUES (130, NULL, 'day_car_ratio', '0.2');
+    INSERT INTO `arch_dict` VALUES (131, NULL, 'day_car_sim_th', '0.35');
+    INSERT INTO `arch_dict` VALUES (132, NULL, 'day_loc_ratio', '0.9');
+    INSERT INTO `arch_dict` VALUES (133, NULL, 'day_loc_sim_th', '0.6');
+    INSERT INTO `arch_dict` VALUES (134, NULL, 'day_low_sim_th', '0.5');
+    INSERT INTO `arch_dict` VALUES (135, NULL, 'day_child_sim_th', '0.65');
+    INSERT INTO `arch_dict` VALUES (136, NULL, 'day_high_sim_th', '0.62');
+    INSERT INTO `arch_dict` VALUES (137, NULL, 'day_sl_sim_th', '0.6');
+    INSERT INTO `arch_dict` VALUES (138, NULL, 'day_mask_sim_th', '0.7');
+    INSERT INTO `arch_dict` VALUES (139, NULL, 'day_max_sim_th', '0.62');
+    INSERT INTO `arch_dict` VALUES (140, NULL, 'day_percent10_sim_th', '0.3');
+    INSERT INTO `arch_dict` VALUES (141, NULL, 'day_percent90_sim_th', '0.6');
+    INSERT INTO `arch_dict` VALUES (142, NULL, 'day_child_percent90_sim_th', '0.75');
+    INSERT INTO `arch_dict` VALUES (143, NULL, 'mask_th_gain', '0.05');
+    INSERT INTO `arch_dict` VALUES (144, NULL, 'max_sim_th', '0.6');
+    INSERT INTO `arch_dict` VALUES (145, NULL, 'percent20_sim_th', '0.45');
+    INSERT INTO `arch_dict` VALUES (146, NULL, 'car_ratio', '0.2');
+    INSERT INTO `arch_dict` VALUES (147, NULL, 'car_inter_sim_th', '0.45');
+    INSERT INTO `arch_dict` VALUES (148, NULL, 'loc_ratio', '0.8');
+    INSERT INTO `arch_dict` VALUES (149, NULL, 'loc_inter_sim_th', '0.5');
+    INSERT INTO `arch_dict` VALUES (150, NULL, 'low_mean_sim_th', '0.5');
+    INSERT INTO `arch_dict` VALUES (151, NULL, 'high_mean_sim_th', '0.57');
+    INSERT INTO `arch_dict` VALUES (152, NULL, 'low_sl_min_sim_th', '0.53');
+    INSERT INTO `arch_dict` VALUES (153, NULL, 'low_max_sim_th', '0.6');
+    INSERT INTO `arch_dict` VALUES (154, NULL, 'child_th_gain', '0.2');
+    INSERT INTO `arch_dict` VALUES (155, NULL, 'child_min_sim_th', '0.63');
+    INSERT INTO `arch_dict` VALUES (156, NULL, 'search_batch', '30');
+    INSERT INTO `arch_dict` VALUES (157, NULL, 'search_clu_topk', '10');
+    INSERT INTO `arch_dict` VALUES (158, NULL, 'search_merge_th', '0.6');
+    INSERT INTO `arch_dict` VALUES (159, '档案过滤分', 'filt_score', '0.59');
+    INSERT INTO `arch_dict` VALUES (160, 'top1档案簇阈值', 'search_top1_clu_th', '0.55');
+    INSERT INTO `arch_dict` VALUES (161, 'top1档案图片阈值', 'search_top1_pic_th', '0.6');
+    INSERT INTO `arch_dict` VALUES (162, '簇簇阈值', 'search_clu_clu_th', '0.7');
+    INSERT INTO `arch_dict` VALUES (163, '图簇阈值', 'search_pic_clu_th', '0.55');
+    INSERT INTO `arch_dict` VALUES (164, '后处理策略', 'search_post_type', '6');
+    INSERT INTO `arch_dict` VALUES (165, '抽样几条数据看详情', 'detail_num', '3');
+    INSERT INTO `arch_dict` VALUES (166, '特征缺失阈值', 'feature_lack_th', '0.0');
+    INSERT INTO `arch_dict` VALUES (167, '非256维特征阈值', 'errorfeasize_th', '0.0');
+    INSERT INTO `arch_dict` VALUES (170, '摄像头类型缺失阈值', 'ctag_lack_th', '2.0');
+    INSERT INTO `arch_dict` VALUES (171, '经度缺失阈值', 'lon_lack_th', '0.1');
+    INSERT INTO `arch_dict` VALUES (172, '中国经度最小值', 'lon_min', '73.66');
+    INSERT INTO `arch_dict` VALUES (173, '中国经度最大值', 'lon_max', '135.05');
+    INSERT INTO `arch_dict` VALUES (174, '超出中国经度范围数据占比的阈值', 'lon_out_th', '0.0');
+    INSERT INTO `arch_dict` VALUES (175, '纬度缺失阈值', 'lat_lack_th', '0.1');
+    INSERT INTO `arch_dict` VALUES (176, '中国纬度最小值', 'lat_min', '3.86');
+    INSERT INTO `arch_dict` VALUES (177, '中国纬度最大值', 'lat_max', '53.55');
+    INSERT INTO `arch_dict` VALUES (178, '超出中国纬度范围数据占比的阈值', 'lat_out_th', '0.0');
+    INSERT INTO `arch_dict` VALUES (179, '抓拍时间缺失阈值', 'timestamp_lack_th', '0.1');
+    INSERT INTO `arch_dict` VALUES (180, '时间单位错误阈值', 'timestamp_out_th', '2.0');
+    INSERT INTO `arch_dict` VALUES (181, '车牌号缺失阈值', 'carplat_lack_th', '0.95');
+    INSERT INTO `arch_dict` VALUES (182, '人脸质量分缺失阈值', 'facescore_lack_th', '0.1');
+    INSERT INTO `arch_dict` VALUES (183, '模糊度缺失阈值', 'blur_lack_th', '0.1');
+    INSERT INTO `arch_dict` VALUES (184, '遮挡比例缺失阈值', 'occlu_lack_th', '0.1');
+    INSERT INTO `arch_dict` VALUES (185, '口罩置信度缺失阈值', 'maskprob_lack_th', '2.0');
+    INSERT INTO `arch_dict` VALUES (186, '年龄缺失阈值', 'age_lack_th', '0.1');
+    INSERT INTO `arch_dict` VALUES (187, '年龄单一类型阈值', 'age_type_th', '0.999');
+    INSERT INTO `arch_dict` VALUES (188, '口罩缺失阈值', 'mask_lack_th', '0.1');
+    INSERT INTO `arch_dict` VALUES (189, '口罩单一类型阈值', 'mask_type_th', '0.999');
+    INSERT INTO `arch_dict` VALUES (190, '主副驾缺失阈值', 'driver_lack_th', '2.0');
+    INSERT INTO `arch_dict` VALUES (191, '主副驾单一类型阈值', 'driver_type_th', '2.0');
+    INSERT INTO `arch_dict` VALUES (192, 'FF模型分数size', 'score_size', '5');
+    INSERT INTO `arch_dict` VALUES (193, '距离', 'dis', '0.0 0.539906084538 0.578212320805 0.614481985569 1.0');
+    INSERT INTO `arch_dict` VALUES (194, 'aise百分制分数', 'score', '100.0 90.0 80.0 70.0 0.0');
+    INSERT INTO `arch_dict` VALUES (196, '使用属性召回的topk', 'attr_topk', '5');
+    INSERT INTO `arch_dict` VALUES (197, '测试以图搜档aise召回阈值', 'min_score', '60');
+    INSERT INTO `arch_dict` VALUES (198, '以图搜档相同图片阈值', 'search_same_pic_th', '0.99');
+    INSERT INTO `arch_dict` VALUES (199, '以图搜档判断是否删除图片', 'search_judge_delete', '0');
+    INSERT INTO `arch_dict` VALUES (200, '以图搜档删除top1档图片数量阈值', 'search_delete_num', '5');
+    INSERT INTO `arch_dict` VALUES (201, '以图搜档删除top1档图片比例阈值', 'search_delete_ratio', '0.2');
+    INSERT INTO `arch_dict` VALUES (202, '以图搜档是否搜索天级库', 'search_day_doc', '1');
+    INSERT INTO `arch_dict` VALUES (203, '天级库是否开启拆档，0：关闭，1：开启', 'split_day', '0');
+    INSERT INTO `arch_dict` VALUES (204, '全量库是否开启拆档，0：关闭，1：开启', 'split_history', '0');
+    INSERT INTO `arch_dict` VALUES (205, 'center(质心)、min_center_pic(质心相似度与图片相似度最小值)', 'split_distance', 'min_center_pic');
+    INSERT INTO `arch_dict` VALUES (206, '层次聚类阈值，越高表示更不容易被拆档', 'hcluster_cdist', '0.6');
+    INSERT INTO `arch_dict` VALUES (207, '拆档条件簇间最小相似度阈值', 'split_sim_th', '0.3');
+    INSERT INTO `arch_dict` VALUES (208, '拆档条件图片数阈值', 'split_pic_th', '10');
+    INSERT INTO `arch_dict` VALUES (209, '以图搜档top1档案是否过滤操作', 'search_is_filter', '0');
+    INSERT INTO `arch_dict` VALUES (210, '以图搜档在线合档簇比例阈值', 'search_hit_clu_ratio', '0.5');
+    INSERT INTO `arch_dict` VALUES (211, '以图搜档在线合档图片比例阈值', 'search_hit_pic_ratio', '0.5');
+    INSERT INTO `arch_dict` VALUES (212, '以图搜档在线合档更新档案是否写回物理档', 'search_is_update_doc', '1');
+    INSERT INTO `arch_dict` VALUES (213, '以图搜档是否搜索全量库', 'search_all_doc', '1');
+    INSERT INTO `arch_dict` VALUES (214, '以图搜档过滤图片簇簇阈值', 'search_filter_clu_clu_th', '0.4');
+    INSERT INTO `arch_dict` VALUES (215, '以图搜档合入物理档案最小档案图片数阈值', 'search_merged_doc_size', '5');
+    INSERT INTO `arch_dict` VALUES (216, '以图搜档档案分数计算方式', 'search_doc_score_type', '0');
+    INSERT INTO `arch_dict` VALUES (217, '以图搜档检索簇个数', 'search_topk', '500');
+    INSERT INTO `arch_dict` VALUES (218, '以图搜档返回是多个物理档', 'search_return_physical_doc', '1');
+    INSERT INTO `arch_dict` VALUES (219, '以图搜档在线合档迭代次数', 'search_merge_times', '5');
+    INSERT INTO `arch_dict` VALUES (220, '以图搜档top1档是否展示最高分', 'search_top1_score_max', '0');
+    INSERT INTO `arch_dict` VALUES (221, '实名化天级库/历史库', 'realname_db_type', '2');
+    INSERT INTO `arch_dict` VALUES (222, '实名化图片质量-遮挡最大比例-左眼', 'realname_occlu_left_eye', '1');
+    INSERT INTO `arch_dict` VALUES (223, '实名化图片质量-遮挡最大比例-右眼', 'realname_occlu_right_eye', '1');
+    INSERT INTO `arch_dict` VALUES (224, '实名化图片质量-遮挡最大比例-鼻子', 'realname_occlu_nose', '1');
+    INSERT INTO `arch_dict` VALUES (225, '实名化图片质量-遮挡最大比例-嘴巴', 'realname_occlu_mouth', '1');
+    INSERT INTO `arch_dict` VALUES (226, '实名化图片质量-遮挡最大比例-左脸颊', 'realname_occlu_left_cheek', '1');
+    INSERT INTO `arch_dict` VALUES (227, '实名化图片质量-遮挡最大比例-右脸颊', 'realname_occlu_right_cheek', '1');
+    INSERT INTO `arch_dict` VALUES (228, '实名化图片质量-遮挡最大比例-下巴', 'realname_occlu_chin_contour', '1');
+    INSERT INTO `arch_dict` VALUES (229, '实名化代表点选取对象doc_title/cluster_title/all_pic', 'realname_rep_strategy', 'doc_title');
+    INSERT INTO `arch_dict` VALUES (230, '实名化是否只对代表点有更新的撞库', 'realname_is_check_update', '0');
+    INSERT INTO `arch_dict` VALUES (231, '实名化是否提供拆档线索', 'realname_is_discover_divide', '0');
+    INSERT INTO `arch_dict` VALUES (232, '多个实名化结果的分组阈值', 'realname_divide_threshold', '100');
+    INSERT INTO `arch_dict` VALUES (233, '实名化是否提供合档线索', 'realname_is_discover_combine', '0');
+    INSERT INTO `arch_dict` VALUES (234, '实名化批处理档案数最大值', 'realname_batch_num', '500');
+    INSERT INTO `arch_dict` VALUES (235, '实名化每个档案采样图片数最大值', 'realname_pic_num', '50');
+    INSERT INTO `arch_dict` VALUES (236, '全局簇对应档案数量限制', 'cluster_doc_limit', '100');
+    INSERT INTO `arch_dict` VALUES (237, '档案geohash信息取topK', 'doc_geo_cnt', '100');
+    INSERT INTO `arch_dict` VALUES (238, '档案车牌号信息取topK', 'doc_car_cnt', '100');
+    INSERT INTO `arch_dict` VALUES (239, '工程侧参数 以图搜档是否返回多个档', 'is_topK', '0');
+    INSERT INTO `arch_dict` VALUES (240, '档案代表图数量', 'doc_rep_num', '10');
+    INSERT INTO `arch_dict` VALUES (241, '簇生成-满足阈值边的比例', 'ecount_ratio', '0.8');
+    INSERT INTO `arch_dict` VALUES (242, '簇生成-满足阈值边的数量', 'ecount_cnt', '10');
+    INSERT INTO `arch_dict` VALUES (243, '全局簇连通阈值', 'clu_connect_thresh_day', '0.55');
+    INSERT INTO `arch_dict` VALUES (244, '全局簇质心更新阈值', 'update_sim_th', '0.95');
+    INSERT INTO `arch_dict` VALUES (245, '全局簇历史库质心更新阈值', 'clu_connect_thresh_history', '0.45');
+    COMMIT;
+    
+    
+    -- ----------------------------
+    -- Table structure for arch_dict_engineer
+    -- ----------------------------
+    CREATE TABLE IF NOT EXISTS `arch_dict_engineer` (
+      `id` bigint(20) NOT NULL AUTO_INCREMENT,
+      `description` varchar(500) DEFAULT NULL,
+      `dict_key` varchar(100) NOT NULL,
+      `dict_value` text NOT NULL,
+      PRIMARY KEY (`id`) USING BTREE,
+      UNIQUE KEY `UK_6hg0fikdbrv661a9hwlrp6i3y` (`dict_key`) USING BTREE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;
+    
+    -- ----------------------------
+    -- Records of arch_dict_engineer
+    -- ----------------------------
+    BEGIN;
+    INSERT INTO `arch_dict_engineer` VALUES (1, '建天级库的服务地址', 'collection_url', 'http://{{ .Values.web.server.ip }}:{{ .Values.web.server.port }}/doc/collection/day/create');
+    INSERT INTO `arch_dict_engineer` VALUES (2, '档案抓拍表url', 'arch_pictures_url', 'jdbc:mysql://{{ .Values.mysql.ip }}:{{ .Values.mysql.port }}/{{ .Values.mysql.db }}');
+    INSERT INTO `arch_dict_engineer` VALUES (3, '档案抓拍表用户名', 'arch_pictures_username', '{{ .Values.mysql.user }}');
+    INSERT INTO `arch_dict_engineer` VALUES (4, '档案抓拍表密码', 'arch_pictures_password', '{{ .Values.mysql.pass }}');
+    INSERT INTO `arch_dict_engineer` VALUES (5, 'so加载位置', 'so_path', '{{ .Values.job.soPath }}');
+    INSERT INTO `arch_dict_engineer` VALUES (7, '合入任务数/并行度', 'merge_parallelism', '1200');
+    INSERT INTO `arch_dict_engineer` VALUES (8, '召回任务数/并行度', 'recall_parallelism', '500');
+    INSERT INTO `arch_dict_engineer` VALUES (9, '打分任务数/并行度', 'score_parallelism', '80');
+    INSERT INTO `arch_dict_engineer` VALUES (10, '获取id列表地址', 'id_url', 'http://{{ .Values.job.ip }}:{{ .Values.job.port }}/job/getIds');
+    INSERT INTO `arch_dict_engineer` VALUES (11, '是否开启雪花唯一id验证', 'valid_snow_id', 'false');
+    INSERT INTO `arch_dict_engineer` VALUES (12, '历史库档案召回、档档计算分区数', 'history_realinfo_parallelism', '10000');
+    INSERT INTO `arch_dict_engineer` VALUES (13, '历史库合入分区数', 'history_doc_merge', '10000');
+    INSERT INTO `arch_dict_engineer` VALUES (15, 'pid存储hdfs的目录', 'hdfs_pid_path', 'http://{{ .Values.hdfs.ip }}:{{ .Values.hdfs.port }}/doc/data/doc/statistic');
+    INSERT INTO `arch_dict_engineer` VALUES (90, '天级库driver端内存', 'day_driver_memory', '30');
+    INSERT INTO `arch_dict_engineer` VALUES (91, '天级库excutor端内存', 'day_executor_memory', '7');
+    INSERT INTO `arch_dict_engineer` VALUES (92, '天级库excutor个数', 'day_executor_instances', '20');
+    INSERT INTO `arch_dict_engineer` VALUES (93, '历史库driver端内存', 'history_driver_memory', '30');
+    INSERT INTO `arch_dict_engineer` VALUES (94, '历史库excutor端内存', 'history_executor_memory', '7');
+    INSERT INTO `arch_dict_engineer` VALUES (95, '历史库excutor个数', 'history_executor_instances', '5');
+    INSERT INTO `arch_dict_engineer` VALUES (96, '最小加载单元，应保证size大于等于此值且是整数倍', 'load_snapshaot_unit', '400');
+    INSERT INTO `arch_dict_engineer` VALUES (97, '是否开启core测试', 'core_test', 'false');
+    COMMIT;
+    
+    
+    
+    
+    -- ----------------------------
+    -- Table structure for task_conf
+    -- ----------------------------
+    CREATE TABLE IF NOT EXISTS `task_conf` (
+      `id` bigint(20) NOT NULL AUTO_INCREMENT,
+      `created_by` varchar(255) DEFAULT NULL,
+      `created_date` datetime DEFAULT NULL,
+      `last_modified_by` varchar(255) DEFAULT NULL,
+      `last_modified_date` datetime DEFAULT NULL,
+      `description` varchar(500) DEFAULT NULL,
+      `dict_key` varchar(100) NOT NULL,
+      `dict_value` text NOT NULL,
+      PRIMARY KEY (`id`),
+      UNIQUE KEY `UK_818mrwmaus4r2r1f0u2vbfwqj` (`dict_key`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+    
+    -- ----------------------------
+    -- Records of task_conf
+    -- ----------------------------
+    BEGIN;
+    INSERT INTO `task_conf` VALUES (1, NULL, NULL, NULL, '2021-12-20 13:42:30', '聚类开始时间', 'day', '2021-08-01 00:00:00');
+    INSERT INTO `task_conf` VALUES (2, NULL, NULL, NULL, '2021-12-24 16:23:15', '聚类开始抓拍库偏移量', 'offset', '20000');
+    INSERT INTO `task_conf` VALUES (3, NULL, NULL, NULL, NULL, '聚类单批次任务量', 'size', '10000');
+    INSERT INTO `task_conf` VALUES (4, NULL, NULL, NULL, NULL, '自动聚类开关', 'button', 'true');
+    INSERT INTO `task_conf` VALUES (5, NULL, NULL, NULL, NULL, '任务并行度', 'parallelism', '1');
+    INSERT INTO `task_conf` VALUES (6, NULL, NULL, NULL, NULL, '追数据的终止时间', 'deadline', '2021-08-03 00:00:00');
+    INSERT INTO `task_conf` VALUES (7, NULL, NULL, NULL, NULL, '实名化聚类开关', 'real_button', 'false');
+    INSERT INTO `task_conf` VALUES (8, NULL, NULL, NULL, '2021-12-20 10:21:15', '实名化聚类开始时间', 'real_update_time', '1639743100946');
+    COMMIT;
+    
+    
+    -- ----------------------------
+    -- Table structure for aggregation_statistics
+    -- ----------------------------
+    CREATE TABLE IF NOT EXISTS `aggregation_statistics` (
+      `id` bigint(20) NOT NULL AUTO_INCREMENT,
+      `created_by` varchar(255) DEFAULT NULL,
+      `created_date` datetime DEFAULT NULL,
+      `last_modified_by` varchar(255) DEFAULT NULL,
+      `last_modified_date` datetime DEFAULT NULL,
+      `agg_push_image_count` bigint(20) DEFAULT NULL,
+      `archived_image_count` bigint(20) DEFAULT NULL,
+      `fifty_to_hundred_image_archive_count` bigint(20) DEFAULT NULL,
+      `five_thousand_image_archive_count` bigint(20) DEFAULT NULL,
+      `five_to_ten_hundred_image_archive_count` bigint(20) DEFAULT NULL,
+      `five_to_ten_image_archive_count` bigint(20) DEFAULT NULL,
+      `four_to_five_hundred_image_archive_count` bigint(20) DEFAULT NULL,
+      `one_image_archive_count` bigint(20) DEFAULT NULL,
+      `one_to_five_image_archive_count` bigint(20) DEFAULT NULL,
+      `one_to_five_thousand_image_archive_count` bigint(20) DEFAULT NULL,
+      `one_to_two_hundred_image_archive_count` bigint(20) DEFAULT NULL,
+      `ten_to_twenty_image_archive_count` bigint(20) DEFAULT NULL,
+      `three_to_four_hundred_image_archive_count` bigint(20) DEFAULT NULL,
+      `total_archive_count` bigint(20) DEFAULT NULL,
+      `twenty_to_fifty_image_archive_count` bigint(20) DEFAULT NULL,
+      `two_to_three_hundred_image_archive_count` bigint(20) DEFAULT NULL,
+      PRIMARY KEY (`id`),
+      KEY `createdDate` (`created_date`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+    
+    
+    -- ----------------------------
+    -- Table structure for task_semaphore
+    -- ----------------------------
+    CREATE TABLE `task_semaphore` (
+      `id` bigint(20) NOT NULL AUTO_INCREMENT,
+      `obtained_by` varchar(255) DEFAULT NULL,
+      `released_by` text,
+      `semaphore_value` int(11) DEFAULT NULL,
+      PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+
+
